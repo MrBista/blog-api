@@ -1,0 +1,18 @@
+services:
+  blog-api-db:
+    container_name: "blog_api_db"
+    image: mysql:latest # dalam practice nyata ga baik pakai latest, seharusnya ke spesifik verisi dari mysql
+    restart: always
+    environment:
+        MYSQL_USER : blog_api_user
+        MYSQL_PASSWORD : blog_api_password
+        MYSQL_DATABASE : blog_db
+        MYSQL_ROOT_PASSWORD : blog_api_password
+    volumes: 
+      - blog_api_volumes:/var/lib/mysql 
+    ports:
+      - 4003:3306
+
+volumes:
+  blog_api_volumes: 
+    name: blog_api_volumes
