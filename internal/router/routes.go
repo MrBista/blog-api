@@ -1,11 +1,14 @@
 package router
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/MrBista/blog-api/internal/database"
+	"github.com/gofiber/fiber/v2"
+)
 
 func SetupAllRoutes(app *fiber.App) {
 	router := app.Group("/api")
 
-	SetupPostRoute(router)
+	SetupPostRoute(router, database.DB)
 	// SetAuthRoute(router)
 	// SetUserRoute(router)
 
