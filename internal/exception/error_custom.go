@@ -65,3 +65,11 @@ func NewValidationErr(err error) *ErrorCustom {
 		Code:    ERR_BAD_REQUEST,
 	}
 }
+
+func NewGormDBErr(err error) *ErrorCustom {
+	return &ErrorCustom{
+		Message: err.Error(),
+		Status:  fiber.StatusBadRequest,
+		Code:    ERR_DB,
+	}
+}

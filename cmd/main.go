@@ -17,6 +17,8 @@ func main() {
 
 	utils.GetValidator()
 
+	utils.InitLogger()
+
 	app := fiber.New(fiber.Config{
 		ErrorHandler: middleware.HandleError,
 	})

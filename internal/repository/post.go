@@ -2,9 +2,10 @@ package repository
 
 import (
 	"errors"
-	"fmt"
 
+	"github.com/MrBista/blog-api/internal/exception"
 	"github.com/MrBista/blog-api/internal/models"
+	"github.com/MrBista/blog-api/internal/utils"
 	"gorm.io/gorm"
 )
 
@@ -12,8 +13,8 @@ type PostRepository interface {
 	GetAllPost() ([]models.Post, error)
 	GetDetailPost(slug string) (*models.Post, error)
 	CreatePost(post *models.Post) error
-	UpdatePost(id int, data map[string]interface{}) error
-	DeletePost(id int) error
+	UpdatePost(slug string, data map[string]interface{}) error
+	DeletePost(slug string) error
 }
 
 type PostRepositoryImpl struct {
@@ -30,18 +31,24 @@ func (r *PostRepositoryImpl) GetAllPost() ([]models.Post, error) {
 	var posts []models.Post
 	tx := r.DB.Find(&posts)
 
-	return posts, tx.Error
+	if tx.Error != nil {
+		return posts, exception.NewGormDBErr(tx.Error)
+	}
+
+	return posts, nil
 }
 
 func (r *PostRepositoryImpl) GetDetailPost(slug string) (*models.Post, error) {
 	var post models.Post
-	tx := r.DB.Take(&post, "slug like ", "%"+slug+"%")
+	// tx := r.DB.Take(&post, "slug like ?", "%"+slug+"%")
+
+	tx := r.DB.Where("slug = ?", slug).First(&post)
 
 	if tx.Error != nil {
-		return nil, fmt.Errorf("failed to get post %w", tx.Error)
+		return nil, exception.NewGormDBErr(tx.Error)
 	}
 
-	return &post, tx.Error
+	return &post, nil
 
 }
 
@@ -49,24 +56,29 @@ func (r *PostRepositoryImpl) CreatePost(post *models.Post) error {
 	txRes := r.DB.Create(post)
 
 	if txRes.Error != nil {
-		return fmt.Errorf("failed to save post %w", txRes.Error)
+		return exception.NewGormDBErr(txRes.Error)
 	}
 
-	return txRes.Error
+	return nil
 }
 
-func (r *PostRepositoryImpl) UpdatePost(id int, data map[string]interface{}) error {
-	res := r.DB.Where("id = ?", id).Updates(data)
+func (r *PostRepositoryImpl) UpdatePost(slug string, data map[string]interface{}) error {
+	utils.Logger.Info("slug info: ", slug, data)
+	res := r.DB.Model(&models.Post{}).Where("slug = ?", slug).Updates(data)
 
 	if res.RowsAffected == 0 {
-		return errors.New("no row affacted")
+		return exception.NewGormDBErr(errors.New("no row affected"))
 	}
 
-	return fmt.Errorf("")
+	return nil
 }
 
-func (r *PostRepositoryImpl) DeletePost(id int) error {
-	rxRes := r.DB.Where("id = ?", id).Delete(&models.User{})
+func (r *PostRepositoryImpl) DeletePost(slug string) error {
+	rxRes := r.DB.Where("slug = ?", slug).Delete(&models.Post{})
 
-	return rxRes.Error
+	if rxRes.Error != nil {
+		return exception.NewGormDBErr(rxRes.Error)
+	}
+
+	return nil
 }

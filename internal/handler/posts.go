@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"strconv"
 
 	"github.com/MrBista/blog-api/internal/dto"
 	"github.com/MrBista/blog-api/internal/exception"
@@ -101,16 +100,12 @@ func (h *PostImpl) UpdatePost(c *fiber.Ctx) error {
 	if err := validator.Struct(updateBody); err != nil {
 		return exception.NewValidationErr(err)
 	}
-	paramId := c.Params("id")
 
-	id, err := strconv.Atoi(paramId)
+	slugParam := c.Params("slug")
 
-	if err != nil {
-		return err
-	}
-	updateBody.Id = id
+	updateBody.Slug = slugParam
 
-	err = h.PostService.UpdatePost(&updateBody)
+	err := h.PostService.UpdatePost(&updateBody)
 
 	if err != nil {
 		return err
@@ -125,14 +120,13 @@ func (h *PostImpl) UpdatePost(c *fiber.Ctx) error {
 }
 
 func (h *PostImpl) DeletePost(c *fiber.Ctx) error {
-	idParams := c.Params("id")
-	idPost, err := strconv.Atoi(idParams)
+	slug := c.Params("slug")
+
+	err := h.PostService.DeletePost(slug)
 
 	if err != nil {
 		return err
 	}
-
-	h.PostService.DeletePost(idPost)
 
 	return c.Status(fiber.StatusOK).JSON(dto.CommonResponseSuccess{
 		Data:    true,

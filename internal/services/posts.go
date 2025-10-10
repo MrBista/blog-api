@@ -1,8 +1,6 @@
 package services
 
 import (
-	"fmt"
-
 	"github.com/MrBista/blog-api/internal/dto"
 	"github.com/MrBista/blog-api/internal/mapper"
 	"github.com/MrBista/blog-api/internal/models"
@@ -14,7 +12,7 @@ type PostService interface {
 	FindDetailPost(slug string) (*dto.PostResponse, error)
 	CreatePost(reqBody *dto.CreatePostRequest) error
 	UpdatePost(reqBody *dto.UpdatePostRequest) error
-	DeletePost(id int)
+	DeletePost(id string) error
 }
 
 type PostServiceImpl struct {
@@ -60,12 +58,13 @@ func (p *PostServiceImpl) CreatePost(reqBody *dto.CreatePostRequest) error {
 		Slug:       reqBody.Slug,
 		CategoryID: &catId,
 		Content:    reqBody.Content,
+		AuthorID:   1,
 	}
 	err := p.PostRepository.CreatePost(&modelPost)
 
 	if err != nil {
 		// handle error db
-		return fmt.Errorf("failed insert post %w", err)
+		return err
 	}
 
 	reqBody.Id = int(modelPost.ID)
@@ -74,11 +73,38 @@ func (p *PostServiceImpl) CreatePost(reqBody *dto.CreatePostRequest) error {
 }
 
 func (p *PostServiceImpl) UpdatePost(reqBody *dto.UpdatePostRequest) error {
-	panic("not implemented") // TODO: Implement
+
+	_, err := p.FindDetailPost(reqBody.Slug)
+	if err != nil {
+		return err
+	}
+
+	dataToUpdate := make(map[string]interface{})
+	if reqBody.Title != nil {
+		dataToUpdate["title"] = *reqBody.Title
+	}
+	if reqBody.Content != nil {
+		dataToUpdate["content"] = *reqBody.Content
+	}
+	dataToUpdate["status"] = reqBody.Status
+
+	if err := p.PostRepository.UpdatePost(reqBody.Slug, dataToUpdate); err != nil {
+		return err
+	}
 
 	return nil
 }
 
-func (p *PostServiceImpl) DeletePost(id int) {
-	panic("not implemented") // TODO: Implement
+func (p *PostServiceImpl) DeletePost(slug string) error {
+	if _, err := p.FindDetailPost(slug); err != nil {
+		return err
+	}
+
+	err := p.PostRepository.DeletePost(slug)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

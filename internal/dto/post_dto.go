@@ -7,14 +7,14 @@ type CreatePostRequest struct {
 	Title      string `json:"title" validate:"required"`
 	Content    string `json:"content" validate:"required"`
 	Slug       string `json:"slug" validate:"required"`
-	CategoryId int    `jsong:"categoryId" validate:"required"`
+	CategoryId int    `json:"categoryId" validate:"required"`
 }
 
 type UpdatePostRequest struct {
-	Id      int     `json:"id,omitempty"`
+	Slug    string  `json:"slug,omitempty"`
 	Title   *string `json:"title"`
 	Content *string `json:"content"`
-	Status  int     `json:"status"`
+	Status  int     `json:"status" validate:"required"`
 }
 
 type PostResponse struct {

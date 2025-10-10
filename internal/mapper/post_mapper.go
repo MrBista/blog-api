@@ -10,10 +10,13 @@ func MapPostToResponse(post models.Post) dto.PostResponse {
 	postMap.ID = uint64(post.ID)
 	postMap.Title = post.Title
 	postMap.Content = post.Content
-	postMap.MainImageURI = *post.MainImageURI
+	// postMap.MainImageURI = *post.MainImageURI
 	postMap.Slug = post.Slug
 	postMap.CreatedAt = post.CreatedAt
 	postMap.UpdatedAt = post.UpdatedAt
+	if post.MainImageURI != nil {
+		postMap.MainImageURI = *post.MainImageURI
+	}
 
 	return postMap
 }
