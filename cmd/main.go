@@ -3,7 +3,9 @@ package main
 import (
 	"github.com/MrBista/blog-api/internal/config"
 	"github.com/MrBista/blog-api/internal/database"
+	"github.com/MrBista/blog-api/internal/middleware"
 	"github.com/MrBista/blog-api/internal/router"
+	"github.com/MrBista/blog-api/internal/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -13,7 +15,11 @@ func main() {
 	database.Connect()
 	defer database.Close()
 
-	app := fiber.New()
+	utils.GetValidator()
+
+	app := fiber.New(fiber.Config{
+		ErrorHandler: middleware.HandleError,
+	})
 
 	router.SetupAllRoutes(app)
 

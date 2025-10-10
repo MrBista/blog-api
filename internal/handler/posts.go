@@ -1,8 +1,13 @@
 package handler
 
 import (
+	"encoding/json"
+	"strconv"
+
 	"github.com/MrBista/blog-api/internal/dto"
+	"github.com/MrBista/blog-api/internal/exception"
 	"github.com/MrBista/blog-api/internal/services"
+	"github.com/MrBista/blog-api/internal/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -25,18 +30,37 @@ func NewHandlerPost(postService services.PostService) Post {
 }
 
 func (h *PostImpl) CreatePost(c *fiber.Ctx) error {
-	panic("not implemented") // TODO: Implement
+	body := c.Body()
+
+	var reqPost dto.CreatePostRequest
+
+	if err := json.Unmarshal(body, &reqPost); err != nil {
+
+		return err
+	}
+
+	validator := utils.GetValidator()
+
+	if err := validator.Struct(reqPost); err != nil {
+		return exception.NewValidationErr(err)
+	}
+
+	err := h.PostService.CreatePost(&reqPost)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(dto.CommonResponseSuccess{
+		Data:    true,
+		Status:  fiber.StatusCreated,
+		Message: "Successfully create post",
+	})
 }
 
 func (h *PostImpl) GetAllPosts(c *fiber.Ctx) error {
-	// panic("not implemented") // TODO: Implement
 	responsePost, err := h.PostService.FindAllPost()
 	if err != nil {
-		dataResponse := map[string]interface{}{
-			"data":    false,
-			"message": err,
-		}
-		return c.Status(fiber.StatusInternalServerError).JSON(dataResponse)
+		return err
 	}
 
 	return c.
@@ -47,13 +71,72 @@ func (h *PostImpl) GetAllPosts(c *fiber.Ctx) error {
 }
 
 func (h *PostImpl) GetPostBySlug(c *fiber.Ctx) error {
-	panic("not implemented") // TODO: Implement
+	slugParam := c.Params("slug")
+
+	postDetial, err := h.PostService.FindDetailPost(slugParam)
+
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(dto.CommonResponseSuccess{
+		Data:    postDetial,
+		Status:  fiber.StatusOK,
+		Message: "Success",
+	})
+
 }
 
 func (h *PostImpl) UpdatePost(c *fiber.Ctx) error {
-	panic("not implemented") // TODO: Implement
+	body := c.Body()
+
+	var updateBody dto.UpdatePostRequest
+
+	if err := json.Unmarshal(body, &updateBody); err != nil {
+		return err
+	}
+
+	validator := utils.GetValidator()
+
+	if err := validator.Struct(updateBody); err != nil {
+		return exception.NewValidationErr(err)
+	}
+	paramId := c.Params("id")
+
+	id, err := strconv.Atoi(paramId)
+
+	if err != nil {
+		return err
+	}
+	updateBody.Id = id
+
+	err = h.PostService.UpdatePost(&updateBody)
+
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(dto.CommonResponseSuccess{
+		Data:    true,
+		Status:  fiber.StatusOK,
+		Message: "Successfully update posts",
+	})
+
 }
 
 func (h *PostImpl) DeletePost(c *fiber.Ctx) error {
-	panic("not implemented") // TODO: Implement
+	idParams := c.Params("id")
+	idPost, err := strconv.Atoi(idParams)
+
+	if err != nil {
+		return err
+	}
+
+	h.PostService.DeletePost(idPost)
+
+	return c.Status(fiber.StatusOK).JSON(dto.CommonResponseSuccess{
+		Data:    true,
+		Status:  fiber.StatusOK,
+		Message: "Success to delete posts",
+	})
 }

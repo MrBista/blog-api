@@ -3,6 +3,7 @@ package dto
 import "time"
 
 type CreatePostRequest struct {
+	Id         int    `json:"id,omitempty"`
 	Title      string `json:"title" validate:"required"`
 	Content    string `json:"content" validate:"required"`
 	Slug       string `json:"slug" validate:"required"`
@@ -10,6 +11,7 @@ type CreatePostRequest struct {
 }
 
 type UpdatePostRequest struct {
+	Id      int     `json:"id,omitempty"`
 	Title   *string `json:"title"`
 	Content *string `json:"content"`
 	Status  int     `json:"status"`
