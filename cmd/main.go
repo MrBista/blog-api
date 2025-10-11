@@ -15,6 +15,8 @@ func main() {
 	database.Connect()
 	defer database.Close()
 
+	utils.InitJwtService()
+
 	utils.GetValidator()
 
 	utils.InitLogger()

@@ -3,12 +3,14 @@ package config
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	DB DBConfig
+	DB  DBConfig
+	JWT JwtConfig
 }
 
 type DBConfig struct {
@@ -18,6 +20,11 @@ type DBConfig struct {
 	DBName   string
 	Port     string
 	SSLMode  string
+}
+
+type JwtConfig struct {
+	SecretKey      string
+	AccessTokenExp time.Duration
 }
 
 var AppConfig *Config
@@ -40,6 +47,10 @@ func LoadConfig() *Config {
 			Port:     viper.GetString("DB_PORT"),
 			SSLMode:  viper.GetString("DB_SSLMODE"), // optional
 		},
+		JWT: JwtConfig{
+			SecretKey:      viper.GetString("SECRET_KEY"),
+			AccessTokenExp: viper.GetDuration("ACCESS_TOKEN_EXP"),
+		},
 	}
 
 	validateConfig(conf)
@@ -54,6 +65,10 @@ func validateConfig(cfg *Config) {
 		log.Fatal("❌ Missing required DB configuration (DB_HOST, DB_USER, DB_NAME)")
 	}
 
+	if cfg.JWT.SecretKey == "" {
+		log.Fatal("❌ Missing required JWT configuration (SecretKey)")
+	}
+
 }
 
 func (c *DBConfig) Dsn() string {
@@ -65,4 +80,12 @@ func (c *DBConfig) Dsn() string {
 		"%s:%s@tcp(%s:%s)/%s?parseTime=True",
 		c.User, c.Password, c.Host, c.Port, c.DBName,
 	)
+}
+
+func (c *JwtConfig) GetSecretKey() string {
+	return c.SecretKey
+}
+
+func (c *JwtConfig) GetExpTimeAccessToken() time.Duration {
+	return c.AccessTokenExp
 }

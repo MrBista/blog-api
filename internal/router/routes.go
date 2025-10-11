@@ -9,7 +9,7 @@ func SetupAllRoutes(app *fiber.App) {
 	router := app.Group("/api")
 
 	SetupPostRoute(router, database.DB)
-	// SetAuthRoute(router)
+	SetAuthRoute(router, database.DB)
 	// SetUserRoute(router)
 
 }
