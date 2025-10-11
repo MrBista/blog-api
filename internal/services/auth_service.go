@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/MrBista/blog-api/internal/dto"
+	"github.com/MrBista/blog-api/internal/exception"
 	"github.com/MrBista/blog-api/internal/models"
 	"github.com/MrBista/blog-api/internal/repository"
 	"github.com/MrBista/blog-api/internal/utils"
@@ -88,8 +89,8 @@ func (s *AuthServiceImpl) RegisterUser(reqRegister dto.RegisterRequest) error {
 	*/
 	_, err := s.FindByEmailOrUsername(reqRegister.Email, reqRegister.Username)
 
-	if err != nil {
-		return err
+	if err == nil {
+		return exception.NewBadRequestErr("Username/Password is invalid")
 	}
 
 	passwordHash, err := utils.HashPassword(reqRegister.Password)

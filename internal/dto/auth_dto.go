@@ -15,7 +15,7 @@ type LoginResponse struct {
 type RegisterRequest struct {
 	Name     string `json:"name"`
 	Username string `json:"username" validate:"required"`
-	Email    string `json:"email" validate:"required, email"`
+	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
 	Bio      string `json:"bio"`
 	Role     int    `json:"role"`
