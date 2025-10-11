@@ -31,6 +31,7 @@ func (e *ErrorCustom) GetStatusHttp() int {
 
 const (
 	ERR_BAD_REQUEST   = "BAD_REQUEST_ERROR"
+	ERR_NOT_FOUND     = "NOT_FOUND_ERR"
 	ERR_FORBIDEN      = "FORBIDDEN_ERROR"
 	ERR_VALIDATION    = "VALIDATION_ERROR"
 	ERR_BUSNISS_LOGIC = "BUSNIS_LOGIC_ERROR"
@@ -52,6 +53,14 @@ func NewForbiddenErr(message string) *ErrorCustom {
 		Code:    ERR_FORBIDEN,
 		Message: message,
 		Status:  fiber.StatusForbidden,
+	}
+}
+
+func NewNotFoundErr(message string) *ErrorCustom {
+	return &ErrorCustom{
+		Code:    ERR_NOT_FOUND,
+		Message: message,
+		Status:  fiber.StatusNotFound,
 	}
 }
 

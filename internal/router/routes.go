@@ -10,6 +10,7 @@ func SetupAllRoutes(app *fiber.App) {
 
 	SetupPostRoute(router, database.DB)
 	SetAuthRoute(router, database.DB)
+	SetupCategoryRouter(router, database.DB)
 	// SetUserRoute(router)
 
 }
