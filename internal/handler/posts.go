@@ -105,7 +105,19 @@ func (h *PostImpl) UpdatePost(c *fiber.Ctx) error {
 
 	updateBody.Slug = slugParam
 
-	err := h.PostService.UpdatePost(&updateBody)
+	valueClaims := c.Locals("users")
+
+	if valueClaims == nil {
+		return exception.NewBadRequestErr("invalid authorization user")
+	}
+
+	userClaim, ok := valueClaims.(*utils.Claims)
+
+	if !ok {
+		return exception.NewBadRequestErr("invalid authorization user.")
+	}
+
+	err := h.PostService.UpdatePost(&updateBody, *userClaim)
 
 	if err != nil {
 		return err
@@ -122,7 +134,19 @@ func (h *PostImpl) UpdatePost(c *fiber.Ctx) error {
 func (h *PostImpl) DeletePost(c *fiber.Ctx) error {
 	slug := c.Params("slug")
 
-	err := h.PostService.DeletePost(slug)
+	valueClaims := c.Locals("users")
+
+	if valueClaims == nil {
+		return exception.NewBadRequestErr("invalid authorization user")
+	}
+
+	userClaim, ok := valueClaims.(*utils.Claims)
+
+	if !ok {
+		return exception.NewBadRequestErr("invalid authorization user.")
+	}
+
+	err := h.PostService.DeletePost(slug, *userClaim)
 
 	if err != nil {
 		return err

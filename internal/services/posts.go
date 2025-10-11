@@ -2,17 +2,19 @@ package services
 
 import (
 	"github.com/MrBista/blog-api/internal/dto"
+	"github.com/MrBista/blog-api/internal/exception"
 	"github.com/MrBista/blog-api/internal/mapper"
 	"github.com/MrBista/blog-api/internal/models"
 	"github.com/MrBista/blog-api/internal/repository"
+	"github.com/MrBista/blog-api/internal/utils"
 )
 
 type PostService interface {
 	FindAllPost() ([]dto.PostResponse, error)
 	FindDetailPost(slug string) (*dto.PostResponse, error)
 	CreatePost(reqBody *dto.CreatePostRequest) error
-	UpdatePost(reqBody *dto.UpdatePostRequest) error
-	DeletePost(id string) error
+	UpdatePost(reqBody *dto.UpdatePostRequest, user utils.Claims) error
+	DeletePost(id string, user utils.Claims) error
 }
 
 type PostServiceImpl struct {
@@ -72,11 +74,15 @@ func (p *PostServiceImpl) CreatePost(reqBody *dto.CreatePostRequest) error {
 	return nil
 }
 
-func (p *PostServiceImpl) UpdatePost(reqBody *dto.UpdatePostRequest) error {
+func (p *PostServiceImpl) UpdatePost(reqBody *dto.UpdatePostRequest, user utils.Claims) error {
 
-	_, err := p.FindDetailPost(reqBody.Slug)
+	postDetail, err := p.FindDetailPost(reqBody.Slug)
 	if err != nil {
 		return err
+	}
+
+	if postDetail.AuthorId != user.UserId {
+		return exception.NewForbiddenErr("posts is not yours")
 	}
 
 	dataToUpdate := make(map[string]interface{})
@@ -95,12 +101,17 @@ func (p *PostServiceImpl) UpdatePost(reqBody *dto.UpdatePostRequest) error {
 	return nil
 }
 
-func (p *PostServiceImpl) DeletePost(slug string) error {
-	if _, err := p.FindDetailPost(slug); err != nil {
+func (p *PostServiceImpl) DeletePost(slug string, user utils.Claims) error {
+	postDetail, err := p.FindDetailPost(slug)
+	if err != nil {
 		return err
 	}
 
-	err := p.PostRepository.DeletePost(slug)
+	if postDetail.AuthorId != user.UserId {
+		return exception.NewForbiddenErr("posts is not yours")
+	}
+
+	err = p.PostRepository.DeletePost(slug)
 
 	if err != nil {
 		return err

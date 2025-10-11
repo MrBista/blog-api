@@ -23,6 +23,7 @@ type PostResponse struct {
 	Slug         string    `json:"slug"`
 	Content      string    `json:"content"`
 	MainImageURI string    `json:"mainImageURI"`
+	AuthorId     int       `json:"authorId"`
 	Status       int       `json:"status"`
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`

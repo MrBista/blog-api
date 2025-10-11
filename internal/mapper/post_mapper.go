@@ -17,6 +17,7 @@ func MapPostToResponse(post models.Post) dto.PostResponse {
 	if post.MainImageURI != nil {
 		postMap.MainImageURI = *post.MainImageURI
 	}
+	postMap.AuthorId = int(post.AuthorID)
 
 	return postMap
 }
