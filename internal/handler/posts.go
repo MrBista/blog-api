@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/MrBista/blog-api/internal/dto"
 	"github.com/MrBista/blog-api/internal/exception"
@@ -57,7 +58,32 @@ func (h *PostImpl) CreatePost(c *fiber.Ctx) error {
 }
 
 func (h *PostImpl) GetAllPosts(c *fiber.Ctx) error {
-	responsePost, err := h.PostService.FindAllPost()
+
+	// Parse query parameters
+	page, _ := strconv.Atoi(c.Query("page", "1"))
+	pageSize, _ := strconv.Atoi(c.Query("page_size", "10"))
+	sort := c.Query("sort", "created_at desc")
+
+	// Parse filter parameters
+	title := c.Query("title")
+	categoryID, _ := strconv.Atoi(c.Query("category_id"))
+	authorID, _ := strconv.Atoi(c.Query("author_id"))
+	status, _ := strconv.Atoi(c.Query("status"))
+
+	// Create filter params
+	filter := dto.PostFilterRequest{
+		Title:      title,
+		CategoryID: categoryID,
+		AuthorID:   authorID,
+		Status:     status,
+		PaginationParams: dto.PaginationParams{
+			Page:     page,
+			PageSize: pageSize,
+			Sort:     sort,
+		},
+	}
+
+	responsePost, err := h.PostService.FindAllPostWithPaging(filter)
 	if err != nil {
 		return err
 	}

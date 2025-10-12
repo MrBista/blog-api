@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 
+	"github.com/MrBista/blog-api/internal/dto"
 	"github.com/MrBista/blog-api/internal/exception"
 	"github.com/MrBista/blog-api/internal/models"
 	"github.com/MrBista/blog-api/internal/utils"
@@ -11,6 +12,7 @@ import (
 
 type PostRepository interface {
 	GetAllPost() ([]models.Post, error)
+	FindAllPostWithPaging(filter dto.PostFilterRequest) (*dto.PaginationResult, error)
 	GetDetailPost(slug string) (*models.Post, error)
 	CreatePost(post *models.Post) error
 	UpdatePost(slug string, data map[string]interface{}) error
@@ -81,4 +83,44 @@ func (r *PostRepositoryImpl) DeletePost(slug string) error {
 	}
 
 	return nil
+}
+
+func (r *PostRepositoryImpl) FindAllPostWithPaging(filter dto.PostFilterRequest) (*dto.PaginationResult, error) {
+	var posts []models.Post
+	var total int64
+
+	query := r.DB.Model(&models.Post{})
+
+	if filter.AuthorID != 0 {
+		query.Where("author_id = ?", filter.AuthorID)
+	}
+
+	if filter.CategoryID != 0 {
+		query.Where("category_id = ?", filter.CategoryID)
+	}
+
+	if filter.Title != "" {
+		query.Where("title like ?", "%"+filter.Title+"%")
+	}
+
+	if filter.Status != 0 {
+		query.Where("status = ?", filter.Status)
+	}
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, exception.NewGormDBErr(err)
+	}
+
+	query = applyPagination(query, filter.PaginationParams)
+
+	if filter.Sort != "" {
+		query = query.Order(filter.Sort)
+	}
+
+	if err := query.Find(&posts).Error; err != nil {
+		return nil, exception.NewGormDBErr(err)
+	}
+
+	return dto.NewPaginationResult(posts, total, filter.Page, filter.PageSize), nil
+
 }

@@ -11,6 +11,7 @@ import (
 
 type PostService interface {
 	FindAllPost() ([]dto.PostResponse, error)
+	FindAllPostWithPaging(filter dto.PostFilterRequest) (*dto.PaginationResult, error)
 	FindDetailPost(slug string) (*dto.PostResponse, error)
 	CreatePost(reqBody *dto.CreatePostRequest) error
 	UpdatePost(reqBody *dto.UpdatePostRequest, user utils.Claims) error
@@ -38,6 +39,15 @@ func (p *PostServiceImpl) FindAllPost() ([]dto.PostResponse, error) {
 	postResponse = mapper.MapPostsToReponse(posts)
 
 	return postResponse, nil
+}
+
+func (p *PostServiceImpl) FindAllPostWithPaging(filter dto.PostFilterRequest) (*dto.PaginationResult, error) {
+	posts, err := p.PostRepository.FindAllPostWithPaging(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	return posts, nil
 }
 
 func (p *PostServiceImpl) FindDetailPost(slug string) (*dto.PostResponse, error) {

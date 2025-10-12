@@ -4,7 +4,7 @@ type PostFilterRequest struct {
 	Title      string `json:"title" query:"title"`
 	CategoryID int    `json:"category_id" query:"category_id"`
 	AuthorID   int    `json:"author_id" query:"author_id"`
-	Status     string `json:"status" query:"status"`
+	Status     int    `json:"status" query:"status"`
 	PaginationParams
 }
 
