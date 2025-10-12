@@ -23,6 +23,7 @@ func main() {
 
 	app := fiber.New(fiber.Config{
 		ErrorHandler: middleware.HandleError,
+		Prefork:      true,
 	})
 
 	router.SetupAllRoutes(app)
