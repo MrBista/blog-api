@@ -12,5 +12,5 @@ func SetupAllRoutes(app *fiber.App) {
 	SetAuthRoute(router, database.DB)
 	SetupCategoryRouter(router, database.DB)
 	SetUserRoute(router, database.DB)
-	SetCommentRoute(router, database.DB)
+	// SetCommentRoute(router, database.DB)
 }

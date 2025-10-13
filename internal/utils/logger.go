@@ -8,5 +8,6 @@ func InitLogger() {
 	if Logger == nil {
 		Logger = logrus.New()
 		Logger.SetLevel(logrus.TraceLevel)
+		Logger.SetFormatter(&logrus.JSONFormatter{})
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/MrBista/blog-api/internal/dto"
+	"github.com/MrBista/blog-api/internal/exception"
 	"github.com/MrBista/blog-api/internal/services"
 	"github.com/MrBista/blog-api/internal/utils"
 	"github.com/gofiber/fiber/v2"
@@ -74,6 +75,14 @@ func (h *CommentHandlerImpl) CreateComment(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+
+	postId, err := strconv.Atoi(c.Params("postId"))
+
+	if err != nil {
+		return exception.NewBadRequestErr(err.Error())
+	}
+
+	commentBody.PostId = postId
 
 	data, err := h.CommentService.CreateComment(commentBody, *userDetail)
 

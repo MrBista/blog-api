@@ -8,6 +8,7 @@ import (
 	"github.com/MrBista/blog-api/internal/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var (
@@ -19,7 +20,9 @@ func Connect() {
 	once.Do(func() {
 		dsn := config.AppConfig.DB.Dsn()
 
-		db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+		db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+			Logger: logger.Default.LogMode(logger.Info),
+		})
 		if err != nil {
 			log.Fatalf("failed to get database object: %v", err)
 		}

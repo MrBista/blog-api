@@ -17,7 +17,17 @@ func MapPostToResponse(post models.Post) dto.PostResponse {
 	if post.MainImageURI != nil {
 		postMap.MainImageURI = *post.MainImageURI
 	}
+
+	if post.Author.ID != 0 {
+		postMap.AuthorDetail = &dto.AuthorResponse{
+			Name:  post.Author.Name,
+			Email: post.Author.Email,
+			Id:    post.Author.ID,
+		}
+	}
 	postMap.AuthorId = int(post.AuthorID)
+
+	postMap.LikeCount = post.LikeCount
 
 	return postMap
 }

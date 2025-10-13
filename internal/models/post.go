@@ -20,8 +20,13 @@ type Post struct {
 	PublishedAt    *time.Time `gorm:"column:published_at" json:"publishedAt,omitempty"`
 
 	// Relations
-	// Author   User      `gorm:"foreignKey:AuthorID;references:ID" json:"author,omitempty"`
-	// Category *Category `gorm:"foreignKey:CategoryID;references:ID" json:"category,omitempty"`
+	Author   *User     `gorm:"foreignKey:AuthorID;references:ID" json:"author,omitempty"`
+	Category *Category `gorm:"foreignKey:CategoryID;references:ID" json:"category,omitempty"`
+	Likes    []Like    `gorm:"foreignKey:TargetID;references:ID" json:"likes,omitempty"`
+	Comments []Comment `gorm:"foreignKey:PostID;references:ID" json:"comments,omitempty"`
+
+	// LikeCount int64 `gorm:"-" json:"likeCount"`
+	LikeCount int64 `gorm:"->;column:like_count" json:"likeCount"`
 }
 
 func (p *Post) TableName() string {

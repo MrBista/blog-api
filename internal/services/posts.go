@@ -1,6 +1,10 @@
 package services
 
 import (
+	"fmt"
+	"strings"
+	"time"
+
 	"github.com/MrBista/blog-api/internal/dto"
 	"github.com/MrBista/blog-api/internal/exception"
 	"github.com/MrBista/blog-api/internal/mapper"
@@ -13,6 +17,7 @@ type PostService interface {
 	FindAllPost() ([]dto.PostResponse, error)
 	FindAllPostWithPaging(filter dto.PostFilterRequest) (*dto.PaginationResult, error)
 	FindDetailPost(slug string) (*dto.PostResponse, error)
+	FindDetailPostWitInclude(slug string, filter dto.PostFilterRequest) (*dto.PostResponse, error)
 	CreatePost(reqBody *dto.CreatePostRequest) error
 	UpdatePost(reqBody *dto.UpdatePostRequest, user utils.Claims) error
 	DeletePost(id string, user utils.Claims) error
@@ -63,11 +68,30 @@ func (p *PostServiceImpl) FindDetailPost(slug string) (*dto.PostResponse, error)
 
 }
 
+func (p *PostServiceImpl) FindDetailPostWitInclude(slug string, filter dto.PostFilterRequest) (*dto.PostResponse, error) {
+
+	post, err := p.PostRepository.GetDetailPostWithFilter(slug, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	postResponse := mapper.MapPostToResponse(*post)
+
+	return &postResponse, nil
+
+}
+
 func (p *PostServiceImpl) CreatePost(reqBody *dto.CreatePostRequest) error {
 	catId := int64(reqBody.CategoryId)
+
+	// Ubah title jadi slug-friendly (huruf kecil, spasi jadi '-')
+	slugBase := strings.ToLower(strings.ReplaceAll(reqBody.Title, " ", "_"))
+
+	// Tambahkan timestamp biar unik
+	slugTitle := fmt.Sprintf("%s-%d", slugBase, time.Now().UnixMilli())
 	modelPost := models.Post{
 		Title:      reqBody.Title,
-		Slug:       reqBody.Slug,
+		Slug:       slugTitle,
 		CategoryID: &catId,
 		Content:    reqBody.Content,
 		AuthorID:   1,

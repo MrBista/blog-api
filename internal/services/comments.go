@@ -45,8 +45,10 @@ func (s *CommentServiceImpl) CreateComment(commentBody dto.CommentRequest, userD
 	var comment models.Comment
 	comment.Content = commentBody.Content
 	comment.PostID = int64(commentBody.PostId)
+	if convertParentId != 0 {
+		comment.ParentID = &convertParentId
+	}
 	comment.UserID = &convertUserId
-	comment.ParentID = &convertParentId
 
 	if err := s.CommentRepository.Create(&comment); err != nil {
 		return nil, err

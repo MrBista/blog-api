@@ -1,10 +1,14 @@
 package dto
 
 type PostFilterRequest struct {
-	Title      string `json:"title" query:"title"`
-	CategoryID int    `json:"categoryId" query:"categoryId"`
-	AuthorID   int    `json:"authorId" query:"authorId"`
-	Status     int    `json:"status" query:"status"`
+	Title           string `json:"title" query:"title"`
+	CategoryID      int    `json:"categoryId" query:"categoryId"`
+	AuthorID        int    `json:"authorId" query:"authorId"`
+	Status          int    `json:"status" query:"status"`
+	IncludeLike     int    `json:"includeLike" query:"includeLike"`
+	IncludeAuthor   int    `json:"includeAuthor" query:"includeAuthor"`
+	IncludeCategory int    `json:"includeCategory" query:"includeCategory"`
+	IncludeComment  int    `json:"includeComment" query:"includeComment"`
 	PaginationParams
 }
 

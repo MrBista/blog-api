@@ -3,12 +3,14 @@ package handler
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 
 	"github.com/MrBista/blog-api/internal/dto"
 	"github.com/MrBista/blog-api/internal/exception"
 	"github.com/MrBista/blog-api/internal/services"
 	"github.com/MrBista/blog-api/internal/utils"
 	"github.com/gofiber/fiber/v2"
+	"github.com/sirupsen/logrus"
 )
 
 type Post interface {
@@ -70,6 +72,8 @@ func (h *PostImpl) GetAllPosts(c *fiber.Ctx) error {
 	authorID, _ := strconv.Atoi(c.Query("author_id"))
 	status, _ := strconv.Atoi(c.Query("status"))
 
+	include := c.Query("includes")
+
 	// Create filter params
 	filter := dto.PostFilterRequest{
 		Title:      title,
@@ -83,6 +87,27 @@ func (h *PostImpl) GetAllPosts(c *fiber.Ctx) error {
 		},
 	}
 
+	if include != "" {
+		includes := strings.Split(include, ",")
+
+		for _, v := range includes {
+			if v == "comments" {
+				filter.IncludeComment = 1
+			}
+			if v == "author" {
+				filter.IncludeAuthor = 1
+			}
+			if v == "likes" {
+				filter.IncludeLike = 1
+			}
+			if v == "category" {
+				filter.IncludeCategory = 1
+			}
+		}
+	}
+	utils.Logger.WithFields(logrus.Fields{
+		"filter": filter,
+	}).Info("filter detail posts for users")
 	responsePost, err := h.PostService.FindAllPostWithPaging(filter)
 	if err != nil {
 		return err
@@ -98,7 +123,26 @@ func (h *PostImpl) GetAllPosts(c *fiber.Ctx) error {
 func (h *PostImpl) GetPostBySlug(c *fiber.Ctx) error {
 	slugParam := c.Params("slug")
 
-	postDetial, err := h.PostService.FindDetailPost(slugParam)
+	var filter dto.PostFilterRequest
+	include := c.Query("includes")
+	if include != "" {
+		includes := strings.Split(include, ",")
+
+		for _, v := range includes {
+			if v == "author" {
+				filter.IncludeAuthor = 1
+			}
+			if v == "likes" {
+				filter.IncludeLike = 1
+			}
+		}
+	}
+
+	utils.Logger.WithFields(logrus.Fields{
+		"filter": filter,
+	}).Info("filter detial post")
+
+	postDetial, err := h.PostService.FindDetailPostWitInclude(slugParam, filter)
 
 	if err != nil {
 		return err
