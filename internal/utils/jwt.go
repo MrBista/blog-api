@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/MrBista/blog-api/internal/config"
+	"github.com/MrBista/blog-api/internal/exception"
+	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -76,4 +78,12 @@ func (s *JwtService) VerifyToken(tokenString string) (*Claims, error) {
 	}
 
 	return nil, errors.New("invalid token")
+}
+
+func GetUserClaims(c *fiber.Ctx) (*Claims, error) {
+	value, ok := c.Locals("users").(*Claims)
+	if !ok || value == nil {
+		return nil, exception.NewBadRequestErr("invalid authorization user")
+	}
+	return value, nil
 }

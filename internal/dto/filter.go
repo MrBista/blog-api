@@ -2,8 +2,8 @@ package dto
 
 type PostFilterRequest struct {
 	Title      string `json:"title" query:"title"`
-	CategoryID int    `json:"category_id" query:"category_id"`
-	AuthorID   int    `json:"author_id" query:"author_id"`
+	CategoryID int    `json:"categoryId" query:"categoryId"`
+	AuthorID   int    `json:"authorId" query:"authorId"`
 	Status     int    `json:"status" query:"status"`
 	PaginationParams
 }
@@ -17,5 +17,10 @@ type UserFilterRequest struct {
 
 type CategoryFilterRequest struct {
 	Name string `json:"name" query:"name"`
+	PaginationParams
+}
+
+type CommentFilterRequest struct {
+	PostId int `json:"postId"`
 	PaginationParams
 }

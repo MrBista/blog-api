@@ -20,4 +20,7 @@ func SetupPostRoute(router fiber.Router, db *gorm.DB) {
 	postRouter.Delete("/:slug", middleware.AuthMiddlware(), handlerPost.DeletePost)
 	postRouter.Post("/", middleware.AuthMiddlware(), handlerPost.CreatePost)
 	postRouter.Put("/:slug", middleware.AuthMiddlware(), handlerPost.UpdatePost)
+
+	SetCommentRoute(postRouter, db)
+
 }
