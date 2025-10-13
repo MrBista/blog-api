@@ -116,7 +116,7 @@ func (r *UserRepositoryImpl) FindAllUserWithPagination(filter dto.UserFilterRequ
 		return nil, exception.NewGormDBErr(err)
 	}
 
-	return dto.NewPaginationResult(users, total, filter.Page, filter.PageSize), nil
+	return dto.NewPaginationResult(users, total, filter.Page, filter.PageSize, "users"), nil
 }
 
 func (r *UserRepositoryImpl) DeactiveUsers(ids []int) error {

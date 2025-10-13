@@ -201,6 +201,6 @@ func (r *PostRepositoryImpl) FindAllPostWithPaging(filter dto.PostFilterRequest)
 		return nil, exception.NewGormDBErr(err)
 	}
 
-	return dto.NewPaginationResult(posts, total, filter.Page, filter.PageSize), nil
+	return dto.NewPaginationResult(posts, total, filter.Page, filter.PageSize, "posts"), nil
 
 }

@@ -42,7 +42,7 @@ func (r *CommentRepositoryImpl) FindAllCommentByPostId(filter dto.CommentFilterR
 		return nil, exception.NewGormDBErr(err)
 	}
 
-	return dto.NewPaginationResult(comment, total, filter.Page, filter.PageSize), nil
+	return dto.NewPaginationResult(comment, total, filter.Page, filter.PageSize, "comments"), nil
 }
 
 func (r *CommentRepositoryImpl) Create(comment *models.Comment) error {
