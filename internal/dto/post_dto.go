@@ -31,7 +31,7 @@ type PostResponse struct {
 	AuthorId       int               `json:"authorId"`
 	AuthorDetail   *AuthorResponse   `gorm:"embedded;embeddedPrefix:AuthorDetail_" json:"authorDetail,omitempty"`
 	CategoryDetail *CategoryResponse `gorm:"embedded;embeddedPrefix:CategoryDetail_" json:"categoryDetail,omitempty"`
-	LikeCount      int64             `json:"likeCount,omitempty"`
+	LikeCount      int64             `json:"likeCount"`
 	Status         int               `json:"status"`
 	CreatedAt      time.Time         `json:"createdAt"`
 	UpdatedAt      time.Time         `json:"updatedAt"`

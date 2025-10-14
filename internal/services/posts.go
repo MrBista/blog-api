@@ -24,12 +24,14 @@ type PostService interface {
 }
 
 type PostServiceImpl struct {
-	PostRepository repository.PostRepository
+	PostRepository     repository.PostRepository
+	CategoryRepository repository.CategoryRepository
 }
 
-func NewPostService(postRepostiory repository.PostRepository) PostService {
+func NewPostService(postRepostiory repository.PostRepository, categoryRepository repository.CategoryRepository) PostService {
 	return &PostServiceImpl{
-		PostRepository: postRepostiory,
+		PostRepository:     postRepostiory,
+		CategoryRepository: categoryRepository,
 	}
 }
 
@@ -75,14 +77,20 @@ func (p *PostServiceImpl) FindDetailPostWitInclude(slug string, filter dto.PostF
 		return nil, err
 	}
 
-	postResponse := mapper.MapPostToResponse(*post)
+	// postResponse := mapper.MapPostToResponse(*post)
 
-	return &postResponse, nil
+	return post, nil
 
 }
 
 func (p *PostServiceImpl) CreatePost(reqBody *dto.CreatePostRequest) error {
 	catId := int64(reqBody.CategoryId)
+
+	// validasi dulu apakah ada atau ga categorynya
+
+	if _, err := p.CategoryRepository.FindById(reqBody.CategoryId); err != nil {
+		return exception.NewNotFoundErr("category not found")
+	}
 
 	// Ubah title jadi slug-friendly (huruf kecil, spasi jadi '-')
 	slugBase := strings.ToLower(strings.ReplaceAll(reqBody.Title, " ", "_"))

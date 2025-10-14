@@ -11,5 +11,5 @@ type CategoryResponse struct {
 type CategoryRequst struct {
 	Name     string `json:"name" validate:"required"`
 	Desc     string `json:"desc"`
-	ParentId int    `json:"parentId"`
+	ParentId int    `json:"parentId" validate:"numeric"`
 }

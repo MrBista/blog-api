@@ -83,7 +83,7 @@ func (s *JwtService) VerifyToken(tokenString string) (*Claims, error) {
 func GetUserClaims(c *fiber.Ctx) (*Claims, error) {
 	value, ok := c.Locals("user").(*Claims)
 	if !ok || value == nil {
-		return nil, exception.NewBadRequestErr("invalid authorization user")
+		return nil, exception.NewUnAuthorizationErr("invalid authorization user")
 	}
 	return value, nil
 }

@@ -30,14 +30,15 @@ func (e *ErrorCustom) GetStatusHttp() int {
 }
 
 const (
-	ERR_BAD_REQUEST   = "BAD_REQUEST_ERROR"
-	ERR_NOT_FOUND     = "NOT_FOUND_ERR"
-	ERR_FORBIDEN      = "FORBIDDEN_ERROR"
-	ERR_VALIDATION    = "VALIDATION_ERROR"
-	ERR_BUSNISS_LOGIC = "BUSNIS_LOGIC_ERROR"
-	ERR_DB            = "DB_ERROR"
-	ERR_UNHANDLE      = "INTERNAL_SERVER_ERROR"
-	ERR_COMMON        = "COMMON_ERR"
+	ERR_BAD_REQUEST     = "BAD_REQUEST_ERROR"
+	ERR_NOT_FOUND       = "NOT_FOUND_ERR"
+	ERR_UNAUTHORIZATION = "UNAUTHORIZE_ERR"
+	ERR_FORBIDEN        = "FORBIDDEN_ERROR"
+	ERR_VALIDATION      = "VALIDATION_ERROR"
+	ERR_BUSNISS_LOGIC   = "BUSNIS_LOGIC_ERROR"
+	ERR_DB              = "DB_ERROR"
+	ERR_UNHANDLE        = "INTERNAL_SERVER_ERROR"
+	ERR_COMMON          = "COMMON_ERR"
 )
 
 func NewBadRequestErr(message string) *ErrorCustom {
@@ -45,6 +46,14 @@ func NewBadRequestErr(message string) *ErrorCustom {
 		Message: message,
 		Status:  fiber.StatusBadRequest,
 		Code:    ERR_BAD_REQUEST,
+	}
+}
+
+func NewUnAuthorizationErr(message string) *ErrorCustom {
+	return &ErrorCustom{
+		Message: message,
+		Code:    ERR_UNAUTHORIZATION,
+		Status:  fiber.StatusUnauthorized,
 	}
 }
 

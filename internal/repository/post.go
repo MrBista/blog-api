@@ -17,7 +17,7 @@ type PostRepository interface {
 	CreatePost(post *models.Post) error
 	UpdatePost(slug string, data map[string]interface{}) error
 	DeletePost(slug string) error
-	GetDetailPostWithFilter(slug string, filter dto.PostFilterRequest) (*models.Post, error)
+	GetDetailPostWithFilter(slug string, filter dto.PostFilterRequest) (*dto.PostResponse, error)
 }
 
 type PostRepositoryImpl struct {
@@ -55,32 +55,60 @@ func (r *PostRepositoryImpl) GetDetailPost(slug string) (*models.Post, error) {
 
 }
 
-func (r *PostRepositoryImpl) GetDetailPostWithFilter(slug string, filter dto.PostFilterRequest) (*models.Post, error) {
-	var post models.Post
+func (r *PostRepositoryImpl) GetDetailPostWithFilter(slug string, filter dto.PostFilterRequest) (*dto.PostResponse, error) {
+	var post dto.PostResponse
 	// tx := r.DB.Take(&post, "slug like ?", "%"+slug+"%")
 
-	query := r.DB.Where("slug = ?", slug)
+	query := r.DB.Model(&models.Post{})
+	query = query.Where("slug = ?", slug)
 
-	if filter.IncludeLike == 1 {
-		query = query.Select(`
-		posts.*,
-		(
-			SELECT COUNT(*)
-			FROM likes
-			WHERE likes.target_id = posts.id
-				AND likes.target_type = 1
-		) AS like_count
-	`)
+	if filter.IncludeAuthor == 1 {
+		query = query.Joins("LEFT JOIN users AS author on author.Id = posts.author_id")
+	}
+
+	if filter.IncludeCategory == 1 {
+		query = query.Joins("LEFT JOIN categories as c on c.id = posts.category_id")
+	}
+
+	selectClause := []string{
+		"posts.id",
+		"posts.title",
+		"posts.slug",
+		"posts.content",
+		"posts.main_image_uri",
+		"posts.status",
+		"posts.created_at",
+		"posts.updated_at",
+		"posts.author_id", // Tetap ambil author_id dari tabel post
 	}
 
 	if filter.IncludeAuthor == 1 {
-		query = query.Preload("Author", func(db *gorm.DB) *gorm.DB {
-			return db.Select("users.id", "users.name", "users.email")
-		})
-
+		selectClause = append(selectClause,
+			"author.name AS AuthorDetail_name",
+			"author.email AS AuthorDetail_email",
+			"author.id AS AuthorDetail_id",
+		)
 	}
 
-	if err := query.First(&post).Error; err != nil {
+	if filter.IncludeCategory == 1 {
+		selectClause = append(selectClause,
+			"c.name AS CategoryDetail_name",
+			"c.id AS CategoryDetail_id",
+			"c.slug AS CategoryDetail_slug",
+			"c.description AS CategoryDetail_desc",
+			"c.parent_id AS CategoryDetail_parentId",
+		)
+	}
+
+	if filter.IncludeLike == 1 {
+		// Tambahkan subquery untuk like_count
+		likeSubQuery := `(SELECT COUNT(*) FROM likes WHERE likes.target_id = posts.id AND likes.target_type = 1) AS like_count`
+		selectClause = append(selectClause, likeSubQuery)
+	}
+
+	query = query.Select(selectClause)
+
+	if err := query.Scan(&post).Error; err != nil {
 		return nil, exception.NewGormDBErr(err)
 	}
 
@@ -120,7 +148,8 @@ func (r *PostRepositoryImpl) DeletePost(slug string) error {
 }
 
 func (r *PostRepositoryImpl) FindAllPostWithPaging(filter dto.PostFilterRequest) (*dto.PaginationResult, error) {
-	var posts []dto.PostResponse
+	// var posts []dto.PostResponse
+	posts := make([]dto.PostResponse, 0)
 	var total int64
 
 	query := r.DB.Model(&models.Post{})

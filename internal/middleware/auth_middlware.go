@@ -14,13 +14,13 @@ func AuthMiddlware() fiber.Handler {
 
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
-			return exception.NewBadRequestErr("Missing authorization header")
+			return exception.NewUnAuthorizationErr("Missing authorization header")
 		}
 
 		parts := strings.Split(authHeader, " ")
 
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			return exception.NewBadRequestErr("Invalid authorization header")
+			return exception.NewUnAuthorizationErr("Invalid authorization header")
 		}
 
 		tokenString := parts[1]
@@ -29,7 +29,7 @@ func AuthMiddlware() fiber.Handler {
 		claim, err := jwtService.VerifyToken(tokenString)
 
 		if err != nil {
-			return exception.NewBadRequestErr("invalid or expired token")
+			return exception.NewUnAuthorizationErr("invalid or expired token")
 		}
 
 		c.Locals("user", claim)

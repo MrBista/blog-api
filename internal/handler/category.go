@@ -31,7 +31,22 @@ func NewCategoryHandler(categoryService services.CategoryService) CategoryHandle
 
 func (h *CategoryHandlerImpl) FindAllCategory(c *fiber.Ctx) error {
 
-	categoriesRes, err := h.CategoryService.FindAllCategory()
+	page, _ := strconv.Atoi(c.Query("page", "1"))
+	pageSize, _ := strconv.Atoi(c.Query("page_size", "10"))
+	sort := c.Query("sort", "id desc")
+
+	title := c.Query("name")
+
+	filter := dto.CategoryFilterRequest{
+		Name: title,
+		PaginationParams: dto.PaginationParams{
+			Page:     page,
+			PageSize: pageSize,
+			Sort:     sort,
+		},
+	}
+
+	categoriesRes, err := h.CategoryService.FindAllCategory(filter)
 
 	if err != nil {
 		return err

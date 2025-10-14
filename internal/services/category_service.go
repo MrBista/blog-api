@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/MrBista/blog-api/internal/dto"
@@ -11,7 +13,7 @@ import (
 )
 
 type CategoryService interface {
-	FindAllCategory() ([]dto.CategoryResponse, error)
+	FindAllCategory(filter dto.CategoryFilterRequest) (*dto.PaginationResult, error)
 	FindById(id int) (*dto.CategoryResponse, error)
 	CreateCategory(body dto.CategoryRequst) error
 	UpdateCategory(id int, body dto.CategoryRequst) error
@@ -30,31 +32,31 @@ func NewCategoryService(categoryRepository repository.CategoryRepository, DB *go
 	}
 }
 
-func (s *CategoryServiceImpl) FindAllCategory() ([]dto.CategoryResponse, error) {
-	var categories []dto.CategoryResponse
+func (s *CategoryServiceImpl) FindAllCategory(filter dto.CategoryFilterRequest) (*dto.PaginationResult, error) {
+	// categories := make([]dto.CategoryResponse, 0)
 
-	findAllCategories, err := s.CategoryRepository.FindAll()
+	datas, err := s.CategoryRepository.FindAll(filter)
 
 	if err != nil {
 		return nil, err
 	}
 
-	for _, category := range findAllCategories {
-		categoryDto := dto.CategoryResponse{
-			Id:   int(category.ID),
-			Name: category.Name,
-			Slug: category.Slug,
-			Desc: category.Slug,
-		}
+	// for _, category := range findAllCategories {
+	// 	categoryDto := dto.CategoryResponse{
+	// 		Id:   int(category.ID),
+	// 		Name: category.Name,
+	// 		Slug: category.Slug,
+	// 		Desc: *category.Description,
+	// 	}
 
-		if category.ParentID != nil {
-			categoryDto.ParentId = int(*category.ParentID)
-		}
+	// 	if category.ParentID != nil {
+	// 		categoryDto.ParentId = int(*category.ParentID)
+	// 	}
 
-		categories = append(categories, categoryDto)
-	}
+	// 	categories = append(categories, categoryDto)
+	// }
 
-	return categories, nil
+	return datas, nil
 }
 
 func (s *CategoryServiceImpl) FindById(id int) (*dto.CategoryResponse, error) {
@@ -79,10 +81,23 @@ func (s *CategoryServiceImpl) FindById(id int) (*dto.CategoryResponse, error) {
 }
 
 func (s *CategoryServiceImpl) CreateCategory(body dto.CategoryRequst) error {
+
+	// !TODO tambgah validasi ga boleh namanya sama
+
+	detailCategory, _ := s.CategoryRepository.FindByName(body.Name)
+
+	if detailCategory != nil {
+		return exception.NewBadRequestErr("Category with name " + body.Name + " already exists")
+	}
+
+	slugBase := strings.ToLower(strings.ReplaceAll(body.Name, " ", "_"))
+
+	slugCategory := fmt.Sprintf("%s_%d", slugBase, time.Now().UnixMilli())
+
 	category := models.Category{
 		Name:        body.Name,
 		Description: &body.Desc,
-		Slug:        body.Name + time.Now().String(),
+		Slug:        slugCategory,
 	}
 	if body.ParentId != 0 {
 		var parentId int64 = int64(body.ParentId)
@@ -97,17 +112,32 @@ func (s *CategoryServiceImpl) CreateCategory(body dto.CategoryRequst) error {
 }
 
 func (s *CategoryServiceImpl) UpdateCategory(id int, body dto.CategoryRequst) error {
-	_, err := s.FindById(id)
+	findCategoryById, err := s.FindById(id)
 
 	if err != nil {
 		return exception.NewNotFoundErr("category not found")
 	}
 
+	detailCategory, _ := s.CategoryRepository.FindByName(body.Name)
+
+	if detailCategory != nil && findCategoryById.Id != int(detailCategory.ID) {
+		return exception.NewBadRequestErr("Category with name " + body.Name + " already exists")
+	}
+
+	slugBase := strings.ToLower(strings.ReplaceAll(body.Name, " ", "_"))
+
+	slugCategory := fmt.Sprintf("%s_%d", slugBase, time.Now().UnixMilli())
+
+	var parentID *int
+	if body.ParentId != 0 {
+		parentID = &body.ParentId
+	}
+
 	categoryUpdate := map[string]interface{}{
 		"Name":        body.Name,
 		"Description": body.Desc,
-		"ParentId":    body.ParentId,
-		"Slug":        body.Name + time.Now().String(),
+		"ParentID":    parentID,
+		"Slug":        slugCategory,
 	}
 
 	err = s.CategoryRepository.Update(id, categoryUpdate)

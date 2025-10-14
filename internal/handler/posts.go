@@ -138,6 +138,11 @@ func (h *PostImpl) GetPostBySlug(c *fiber.Ctx) error {
 		}
 	}
 
+	// tetap pakai author dan like
+
+	filter.IncludeLike = 1
+	filter.IncludeAuthor = 1
+
 	utils.Logger.WithFields(logrus.Fields{
 		"filter": filter,
 	}).Info("filter detial post")

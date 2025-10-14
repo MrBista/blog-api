@@ -28,6 +28,10 @@ func NewCommentService(commentRepository repository.CommentRepository, db *gorm.
 }
 
 func (s *CommentServiceImpl) FindAllCommentByPostId(filter dto.CommentFilterRequest, userDetail utils.Claims) (*dto.PaginationResult, error) {
+	if _, err := s.FindDetailPostByPostId(filter.PostId); err != nil {
+		return nil, err
+	}
+
 	datas, err := s.CommentRepository.FindAllCommentByPostId(filter)
 
 	if err != nil {
@@ -37,7 +41,23 @@ func (s *CommentServiceImpl) FindAllCommentByPostId(filter dto.CommentFilterRequ
 	return datas, nil
 }
 
+func (s *CommentServiceImpl) FindDetailPostByPostId(id int) (*models.Post, error) {
+	var post models.Post
+	if err := s.DB.Where("id = ?", id).First(&post).Error; err != nil {
+		return nil, exception.NewNotFoundErr("post not found")
+	}
+
+	return &post, nil
+
+}
+
 func (s *CommentServiceImpl) CreateComment(commentBody dto.CommentRequest, userDetail utils.Claims) (*models.Comment, error) {
+
+	// cari dulu ada ga post yang mau di comment
+	// kalau ga ada maka throw
+	if _, err := s.FindDetailPostByPostId(commentBody.PostId); err != nil {
+		return nil, err
+	}
 
 	convertUserId := int64(userDetail.UserId)
 	convertParentId := int64(commentBody.ParentId)

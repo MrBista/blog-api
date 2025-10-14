@@ -11,7 +11,8 @@ import (
 
 func SetupPostRoute(router fiber.Router, db *gorm.DB) {
 	postRepository := repository.NewPostRepository(db)
-	postService := services.NewPostService(postRepository)
+	categoryRepository := repository.NewCategoryRepository(db)
+	postService := services.NewPostService(postRepository, categoryRepository)
 	handlerPost := handler.NewHandlerPost(postService)
 
 	postRouter := router.Group("/posts")
