@@ -37,7 +37,7 @@ func (h *AuthHandlerImpl) LoginUser(c *fiber.Ctx) error {
 
 	validator := utils.GetValidator()
 
-	if err := validator.Struct(loginReq); err != nil {
+	if err := validator.Struct(&loginReq); err != nil {
 		return exception.NewValidationErr(err)
 	}
 
@@ -65,7 +65,7 @@ func (h *AuthHandlerImpl) RegisterUser(c *fiber.Ctx) error {
 
 	validator := utils.GetValidator()
 
-	if err := validator.Struct(userReq); err != nil {
+	if err := validator.Struct(&userReq); err != nil {
 		return exception.NewValidationErr(err)
 	}
 

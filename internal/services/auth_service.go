@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/MrBista/blog-api/internal/dto"
+	"github.com/MrBista/blog-api/internal/enum"
 	"github.com/MrBista/blog-api/internal/exception"
 	"github.com/MrBista/blog-api/internal/models"
 	"github.com/MrBista/blog-api/internal/repository"
@@ -103,7 +104,8 @@ func (s *AuthServiceImpl) RegisterUser(reqRegister dto.RegisterRequest) error {
 		Username: reqRegister.Username,
 		Email:    reqRegister.Email,
 		Password: passwordHash,
-		Status:   1, // 1 == aktif
+		Status:   1, // 1 == aktif,
+		Role:     int(enum.RoleReader),
 	}
 
 	err = s.UserRepo.CreateUser(&modelUser)

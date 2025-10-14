@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/MrBista/blog-api/internal/enum"
 	"github.com/MrBista/blog-api/internal/handler"
 	"github.com/MrBista/blog-api/internal/middleware"
 	"github.com/MrBista/blog-api/internal/repository"
@@ -17,9 +18,9 @@ func SetupCategoryRouter(route fiber.Router, db *gorm.DB) {
 	categoryRouter := route.Group("/categories")
 
 	categoryRouter.Get("/:id", middleware.AuthMiddlware(), categoryHandler.FindCategoryById)
-	categoryRouter.Put("/:id", middleware.AuthMiddlware(), categoryHandler.UpdateCategory)
-	categoryRouter.Delete("/:id", middleware.AuthMiddlware(), categoryHandler.DeleteCategory)
+	categoryRouter.Put("/:id", middleware.AuthMiddlware(), middleware.RoleMiddleare(enum.RoleAdmin), categoryHandler.UpdateCategory)
+	categoryRouter.Delete("/:id", middleware.AuthMiddlware(), middleware.RoleMiddleare(enum.RoleAdmin), categoryHandler.DeleteCategory)
 	categoryRouter.Get("/", categoryHandler.FindAllCategory)
-	categoryRouter.Post("/", middleware.AuthMiddlware(), categoryHandler.CreateCategory)
+	categoryRouter.Post("/", middleware.AuthMiddlware(), middleware.RoleMiddleare(enum.RoleAdmin), categoryHandler.CreateCategory)
 
 }

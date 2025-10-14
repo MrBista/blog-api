@@ -79,7 +79,7 @@ func (h *CategoryHandlerImpl) CreateCategory(c *fiber.Ctx) error {
 
 	validator := utils.GetValidator()
 
-	if err := validator.Struct(categoryReqbody); err != nil {
+	if err := validator.Struct(&categoryReqbody); err != nil {
 		return exception.NewValidationErr(err)
 	}
 

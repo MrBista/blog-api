@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/MrBista/blog-api/internal/enum"
 	"github.com/MrBista/blog-api/internal/handler"
 	"github.com/MrBista/blog-api/internal/middleware"
 	"github.com/MrBista/blog-api/internal/repository"
@@ -17,5 +18,6 @@ func SetUserRoute(router fiber.Router, db *gorm.DB) {
 	userHandler := handler.NewUserHandler(userService)
 
 	userRoute.Get("/", middleware.AuthMiddlware(), userHandler.GetAllUser)
-	userRoute.Put("/deactive", middleware.AuthMiddlware(), userHandler.DeactiveUser)
+	userRoute.Post("/", middleware.AuthMiddlware(), middleware.RoleMiddleare(enum.RoleAdmin), userHandler.CreateUser)
+	userRoute.Put("/deactive", middleware.AuthMiddlware(), middleware.RoleMiddleare(enum.RoleAdmin), userHandler.DeactiveUser)
 }

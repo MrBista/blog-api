@@ -43,7 +43,7 @@ func (h *PostImpl) CreatePost(c *fiber.Ctx) error {
 
 	validator := utils.GetValidator()
 
-	if err := validator.Struct(reqPost); err != nil {
+	if err := validator.Struct(&reqPost); err != nil {
 		return exception.NewValidationErr(err)
 	}
 
@@ -167,7 +167,7 @@ func (h *PostImpl) UpdatePost(c *fiber.Ctx) error {
 
 	validator := utils.GetValidator()
 
-	if err := validator.Struct(updateBody); err != nil {
+	if err := validator.Struct(&updateBody); err != nil {
 		return exception.NewValidationErr(err)
 	}
 
