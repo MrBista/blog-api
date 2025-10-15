@@ -7,6 +7,7 @@ type CreatePostRequest struct {
 	Title      string `json:"title" validate:"required"`
 	Content    string `json:"content" validate:"required"`
 	CategoryId int    `json:"categoryId" validate:"required"`
+	ImgUrl     string `json:"imgUrl"`
 }
 
 type UpdatePostRequest struct {

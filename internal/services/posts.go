@@ -19,7 +19,7 @@ type PostService interface {
 	FindAllPostWithPaging(filter dto.PostFilterRequest) (*dto.PaginationResult, error)
 	FindDetailPost(slug string) (*dto.PostResponse, error)
 	FindDetailPostWitInclude(slug string, filter dto.PostFilterRequest) (*dto.PostResponse, error)
-	CreatePost(reqBody *dto.CreatePostRequest) error
+	CreatePost(reqBody *dto.CreatePostRequest, user *utils.Claims) error
 	UpdatePost(reqBody *dto.UpdatePostRequest, user utils.Claims) error
 	DeletePost(id string, user utils.Claims) error
 	SaveFileTemp(file *multipart.FileHeader, dst string) (*dto.PostUploadResponse, error)
@@ -90,7 +90,7 @@ func (p *PostServiceImpl) FindDetailPostWitInclude(slug string, filter dto.PostF
 
 }
 
-func (p *PostServiceImpl) CreatePost(reqBody *dto.CreatePostRequest) error {
+func (p *PostServiceImpl) CreatePost(reqBody *dto.CreatePostRequest, user *utils.Claims) error {
 	catId := int64(reqBody.CategoryId)
 
 	// validasi dulu apakah ada atau ga categorynya
@@ -105,11 +105,12 @@ func (p *PostServiceImpl) CreatePost(reqBody *dto.CreatePostRequest) error {
 	// Tambahkan timestamp biar unik
 	slugTitle := fmt.Sprintf("%s-%d", slugBase, time.Now().UnixMilli())
 	modelPost := models.Post{
-		Title:      reqBody.Title,
-		Slug:       slugTitle,
-		CategoryID: &catId,
-		Content:    reqBody.Content,
-		AuthorID:   1,
+		Title:        reqBody.Title,
+		Slug:         slugTitle,
+		CategoryID:   &catId,
+		Content:      reqBody.Content,
+		AuthorID:     int64(user.UserId),
+		MainImageURI: &reqBody.ImgUrl,
 	}
 	err := p.PostRepository.CreatePost(&modelPost)
 

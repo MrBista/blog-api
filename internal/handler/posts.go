@@ -49,7 +49,13 @@ func (h *PostImpl) CreatePost(c *fiber.Ctx) error {
 		return exception.NewValidationErr(err)
 	}
 
-	err := h.PostService.CreatePost(&reqPost)
+	detailUser, err := utils.GetUserClaims(c)
+
+	if err != nil {
+		return err
+	}
+
+	err = h.PostService.CreatePost(&reqPost, detailUser)
 	if err != nil {
 		return err
 	}
