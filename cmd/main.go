@@ -26,6 +26,8 @@ func main() {
 		Prefork:      true,
 	})
 
+	app.Static("/public", "./public")
+
 	router.SetupAllRoutes(app)
 
 	app.Listen(":3000")

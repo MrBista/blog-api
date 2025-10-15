@@ -36,3 +36,8 @@ type PostResponse struct {
 	CreatedAt      time.Time         `json:"createdAt"`
 	UpdatedAt      time.Time         `json:"updatedAt"`
 }
+
+type PostUploadResponse struct {
+	Url         string `json:"url"`
+	IsTemporary int16  `json:"isTemporary"`
+}

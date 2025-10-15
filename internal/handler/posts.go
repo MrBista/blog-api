@@ -19,6 +19,8 @@ type Post interface {
 	GetPostBySlug(c *fiber.Ctx) error
 	UpdatePost(c *fiber.Ctx) error
 	DeletePost(c *fiber.Ctx) error
+
+	SaveFileTemp(c *fiber.Ctx) error
 }
 
 type PostImpl struct {
@@ -231,5 +233,24 @@ func (h *PostImpl) DeletePost(c *fiber.Ctx) error {
 		Data:    true,
 		Status:  fiber.StatusOK,
 		Message: "Success to delete posts",
+	})
+}
+
+func (h *PostImpl) SaveFileTemp(c *fiber.Ctx) error {
+	file, err := c.FormFile("file")
+	if err != nil {
+		return exception.NewBadRequestErr("file not provided")
+	}
+
+	result, err := h.PostService.SaveFileTemp(file, "files")
+
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(dto.CommonResponseSuccess{
+		Data:    result,
+		Status:  fiber.StatusCreated,
+		Message: "Successfully upload temporary files",
 	})
 }

@@ -10,12 +10,15 @@ import (
 )
 
 func SetupPostRoute(router fiber.Router, db *gorm.DB) {
+	postStroage := services.NewLocalStorage("./public", "/public")
 	postRepository := repository.NewPostRepository(db)
 	categoryRepository := repository.NewCategoryRepository(db)
-	postService := services.NewPostService(postRepository, categoryRepository)
+	postService := services.NewPostService(postRepository, categoryRepository, postStroage)
 	handlerPost := handler.NewHandlerPost(postService)
 
 	postRouter := router.Group("/posts")
+
+	postRouter.Post("/uploads", handlerPost.SaveFileTemp)
 	postRouter.Get("/", handlerPost.GetAllPosts)
 	postRouter.Get("/:slug", middleware.AuthMiddlware(), handlerPost.GetPostBySlug)
 	postRouter.Delete("/:slug", middleware.AuthMiddlware(), handlerPost.DeletePost)

@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"mime/multipart"
 	"strings"
 	"time"
 
@@ -21,17 +22,23 @@ type PostService interface {
 	CreatePost(reqBody *dto.CreatePostRequest) error
 	UpdatePost(reqBody *dto.UpdatePostRequest, user utils.Claims) error
 	DeletePost(id string, user utils.Claims) error
+	SaveFileTemp(file *multipart.FileHeader, dst string) (*dto.PostUploadResponse, error)
 }
 
 type PostServiceImpl struct {
 	PostRepository     repository.PostRepository
 	CategoryRepository repository.CategoryRepository
+	StorageService     StorageService
 }
 
-func NewPostService(postRepostiory repository.PostRepository, categoryRepository repository.CategoryRepository) PostService {
+func NewPostService(postRepostiory repository.PostRepository,
+	categoryRepository repository.CategoryRepository,
+	storageService StorageService,
+) PostService {
 	return &PostServiceImpl{
 		PostRepository:     postRepostiory,
 		CategoryRepository: categoryRepository,
+		StorageService:     storageService,
 	}
 }
 
@@ -160,4 +167,31 @@ func (p *PostServiceImpl) DeletePost(slug string, user utils.Claims) error {
 	}
 
 	return nil
+}
+
+func (p *PostServiceImpl) SaveFileTemp(file *multipart.FileHeader, dst string) (*dto.PostUploadResponse, error) {
+
+	uri, err := p.StorageService.SaveFile(file, dst)
+
+	if err != nil {
+		return nil, err
+	}
+
+	postAsset := models.PostAsset{
+		AssetURI:    uri,
+		IsTemporary: 1,
+	}
+
+	if err := p.PostRepository.SaveFilePost(postAsset); err != nil {
+
+		if err := p.StorageService.DeleteFile(uri); err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+
+	return &dto.PostUploadResponse{
+		Url:         uri,
+		IsTemporary: 1,
+	}, nil
 }

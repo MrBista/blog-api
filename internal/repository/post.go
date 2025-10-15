@@ -18,6 +18,8 @@ type PostRepository interface {
 	UpdatePost(slug string, data map[string]interface{}) error
 	DeletePost(slug string) error
 	GetDetailPostWithFilter(slug string, filter dto.PostFilterRequest) (*dto.PostResponse, error)
+
+	SaveFilePost(postAssets models.PostAsset) error
 }
 
 type PostRepositoryImpl struct {
@@ -232,4 +234,13 @@ func (r *PostRepositoryImpl) FindAllPostWithPaging(filter dto.PostFilterRequest)
 
 	return dto.NewPaginationResult(posts, total, filter.Page, filter.PageSize, "posts"), nil
 
+}
+
+func (r *PostRepositoryImpl) SaveFilePost(postAssets models.PostAsset) error {
+
+	if err := r.DB.Create(&postAssets).Error; err != nil {
+		return exception.NewGormDBErr(err)
+	}
+
+	return nil
 }

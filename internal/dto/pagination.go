@@ -4,15 +4,15 @@ import "encoding/json"
 
 type PaginationParams struct {
 	Page     int    `json:"page" query:"page"`
-	PageSize int    `json:"page_size" query:"page_size"`
+	PageSize int    `json:"pageSize" query:"page_size"`
 	Sort     string `json:"sort" query:"sort"`
 }
 
 type PaginationMeta struct {
 	Total      int64 `json:"total"`
 	Page       int   `json:"page"`
-	PageSize   int   `json:"page_size"`
-	TotalPages int   `json:"total_pages"`
+	PageSize   int   `json:"pageSize"`
+	TotalPages int   `json:"totalPages"`
 }
 
 type PaginationResult struct {
