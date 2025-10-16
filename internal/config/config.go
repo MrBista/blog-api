@@ -9,8 +9,16 @@ import (
 )
 
 type Config struct {
-	DB  DBConfig
-	JWT JwtConfig
+	DB      DBConfig
+	JWT     JwtConfig
+	Xendit  XenditConfig
+	AppMain AppMain
+}
+
+type AppMain struct {
+	PORT    string
+	BaseUrl string
+	Domain  string
 }
 
 type DBConfig struct {
@@ -27,11 +35,19 @@ type JwtConfig struct {
 	AccessTokenExp time.Duration
 }
 
+type XenditConfig struct {
+	APIKey     string
+	WebhookKey string
+	BaseURL    string
+}
+
 var AppConfig *Config
 
 func LoadConfig() *Config {
-	viper.SetConfigFile(".env")
+	viper.SetConfigFile("config.yaml")
 	viper.AddConfigPath(".")
+	viper.AddConfigPath("./config")
+	viper.AddConfigPath("/etc/app/")
 
 	// Read config file
 	if err := viper.ReadInConfig(); err != nil {
@@ -39,17 +55,27 @@ func LoadConfig() *Config {
 	}
 
 	conf := &Config{
+		AppMain: AppMain{
+			PORT:    viper.GetString("app.port"),
+			BaseUrl: viper.GetString("app.base_url"),
+			Domain:  viper.GetString("app.domain"),
+		},
 		DB: DBConfig{
-			Host:     viper.GetString("DB_HOST"),
-			User:     viper.GetString("DB_USER"),
-			Password: viper.GetString("DB_PASSWORD"),
-			DBName:   viper.GetString("DB_NAME"),
-			Port:     viper.GetString("DB_PORT"),
-			SSLMode:  viper.GetString("DB_SSLMODE"), // optional
+			Host:     viper.GetString("database.host"),
+			User:     viper.GetString("database.user"),
+			Password: viper.GetString("database.password"),
+			DBName:   viper.GetString("database.dbname"),
+			Port:     viper.GetString("database.port"),
+			SSLMode:  viper.GetString("database.sslmode"),
 		},
 		JWT: JwtConfig{
-			SecretKey:      viper.GetString("SECRET_KEY"),
-			AccessTokenExp: viper.GetDuration("ACCESS_TOKEN_EXP"),
+			SecretKey:      viper.GetString("jwt.secret_key"),
+			AccessTokenExp: viper.GetDuration("jwt.access_token_exp"),
+		},
+		Xendit: XenditConfig{
+			APIKey:     viper.GetString("xendit.api_key"),
+			WebhookKey: viper.GetString("xendit.webhook_key"),
+			BaseURL:    viper.GetString("xendit.base_url"),
 		},
 	}
 
@@ -88,4 +114,26 @@ func (c *JwtConfig) GetSecretKey() string {
 
 func (c *JwtConfig) GetExpTimeAccessToken() time.Duration {
 	return c.AccessTokenExp
+}
+func (c *XenditConfig) GetBaseUrl() string {
+	return c.BaseURL
+}
+
+func (c *XenditConfig) GetApiKey() string {
+	return c.APIKey
+}
+
+func (c *XenditConfig) GetWebhookKey() string {
+	return c.WebhookKey
+}
+
+func (c *AppMain) GetDomain() string {
+	return c.Domain
+}
+
+func (c *AppMain) GetPort() string {
+	return c.PORT
+}
+func (c *AppMain) GetBaseUrl() string {
+	return c.BaseUrl
 }
