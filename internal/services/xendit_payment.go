@@ -12,6 +12,8 @@ import (
 	"github.com/MrBista/blog-api/internal/dto"
 	"github.com/MrBista/blog-api/internal/models"
 	"github.com/MrBista/blog-api/internal/repository"
+	"github.com/MrBista/blog-api/internal/utils"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -21,10 +23,11 @@ type XendiPaymentService struct {
 	Config         *config.Config
 }
 
-func NewXenditPaymentService(userRepository repository.UserRepository, db *gorm.DB) PaymentService {
+func NewXenditPaymentService(userRepository repository.UserRepository, db *gorm.DB, config *config.Config) PaymentService {
 	return &XendiPaymentService{
 		DB:             db,
 		UserRepository: userRepository,
+		Config:         config,
 	}
 }
 
@@ -36,7 +39,7 @@ func (s *XendiPaymentService) CreateQrisPayment(userID uint, amount float64, dur
 	reqBody := dto.CreateQRISRequest{
 		ExternalID:  externalID,
 		Type:        "DYNAMIC",
-		CallbackURL: fmt.Sprintf("%s/webhook/xendit", s.Config.AppMain.GetBaseUrl()),
+		CallbackURL: fmt.Sprintf("%s/webhook/xendit", s.Config.AppMain.GetDomain()),
 		Amount:      amount,
 	}
 
@@ -75,6 +78,15 @@ func (s *XendiPaymentService) CreateQrisPayment(userID uint, amount float64, dur
 		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
+	var dataResponse map[string]interface{}
+
+	if err := json.Unmarshal(body, &dataResponse); err != nil {
+		return nil, fmt.Errorf("failed to parse response: %w", err)
+	}
+	utils.Logger.WithFields(logrus.Fields{
+		"response_xendit": dataResponse,
+	}).Info("data response")
+
 	endDate := time.Now().AddDate(0, durationMonths, 0)
 
 	subscription := &models.Subscription{
@@ -99,6 +111,14 @@ func (s *XendiPaymentService) HandleWebhook(payload []byte) error {
 	if err := json.Unmarshal(payload, &webhook); err != nil {
 		return fmt.Errorf("invalid webhook payload: %w", err)
 	}
+	var dataWebhook map[string]interface{}
+
+	if err := json.Unmarshal(payload, &dataWebhook); err != nil {
+		return fmt.Errorf("invalid webhook payload: %w", err)
+	}
+	utils.Logger.WithFields(logrus.Fields{
+		"dataWebhook": dataWebhook,
+	}).Info("data webhook payload")
 
 	// Find subscription by external ID or payment ID
 	var subscription models.Subscription

@@ -24,7 +24,7 @@ func NewSubscriptionHandler(xenditService services.PaymentService) SubscriptionH
 }
 
 type CreateSubscriptionRequest struct {
-	Plan string `json:"plan"` // monthly, yearly
+	Plan string `json:"plan" validate:"required"` // monthly, yearly
 }
 
 // CreateSubscription membuat subscription baru
@@ -44,6 +44,12 @@ func (h *SubscriptionHandlerImpl) CreateSubscription(c *fiber.Ctx) error {
 	var req CreateSubscriptionRequest
 	if err := c.BodyParser(&req); err != nil {
 		return exception.NewBadRequestErr("Invalid request body")
+	}
+
+	validator := utils.GetValidator()
+
+	if err := validator.Struct(req); err != nil {
+		return exception.NewValidationErr(err)
 	}
 
 	var amount float64
@@ -90,9 +96,7 @@ func (h *SubscriptionHandlerImpl) WebhookPayment(c *fiber.Ctx) error {
 
 	// Handle webhook
 	if err := h.xenditService.HandleWebhook(c.Body()); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to process webhook: " + err.Error(),
-		})
+		return exception.NewBadRequestErr(err.Error())
 	}
 
 	return c.Status(fiber.StatusOK).JSON(dto.CommonResponseSuccess{

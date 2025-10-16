@@ -17,7 +17,7 @@ type Subscription struct {
 	PaymentID     string             `gorm:"column:payment_id;uniqueIndex" json:"paymentId"` // Xendit payment ID
 	ExternalID    string             `gorm:"column:external_id;uniqueIndex" json:"externalId"`
 	Amount        float64            `gorm:"column:amount" json:"amount"`
-	Status        SubscriptionStatus `gorm:"column:status;default:'1'" json:"status"`
+	Status        SubscriptionStatus `gorm:"column:status;default:1" json:"status"`
 	PaymentMethod string             `gorm:"column:payment_method" json:"paymentMethod"` // QRIS
 	QRString      string             `gorm:"column:qr_string;type:text" json:"qrString,omitempty"`
 	QRImageURL    string             `gorm:"column:qr_image_url" json:"qrImageUrl,omitempty"`

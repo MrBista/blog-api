@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/MrBista/blog-api/internal/config"
 	"github.com/MrBista/blog-api/internal/database"
 	"github.com/MrBista/blog-api/internal/handler"
 	"github.com/MrBista/blog-api/internal/middleware"
@@ -13,10 +14,10 @@ func SetupAllRoutes(app *fiber.App) {
 	router := app.Group("/api")
 
 	userRepository := repository.NewUserRepository(database.DB)
-	subscriptionService := services.NewXenditPaymentService(userRepository, database.DB)
+	subscriptionService := services.NewXenditPaymentService(userRepository, database.DB, config.AppConfig)
 	subscriptionHandler := handler.NewSubscriptionHandler(subscriptionService)
 
-	router.Post("/webhook/xendit", subscriptionHandler.WebhookPayment)
+	app.Post("/webhook/xendit", subscriptionHandler.WebhookPayment)
 	subscription := router.Group("/subscriptions", middleware.AuthMiddlware())
 
 	subscription.Post("/", subscriptionHandler.CreateSubscription)
