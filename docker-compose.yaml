@@ -1,4 +1,16 @@
 services:
+  blog-api:
+    build: .
+    ports:
+      - 3000:3000
+    # restart: always
+    depends_on:
+      - blog-api-db
+    container_name: blog-api
+    environment:
+      App: "localhost"
+
+
   blog-api-db:
     container_name: "blog_api_db"
     image: mysql:latest # dalam practice nyata ga baik pakai latest, seharusnya ke spesifik verisi dari mysql

@@ -32,9 +32,14 @@ WORKDIR /root/
 
 # Salin binary yang sudah di-build dari tahap 'builder'
 COPY --from=builder /app/app .
+# !TODO ini di prod hapus
+COPY config.yaml .
+
+COPY wait-for-db.sh .
+RUN chmod +x wait-for-db.sh
 
 # Expose port yang digunakan Gofiber (biasanya 3000)
 EXPOSE 3000
 
 # Perintah default untuk menjalankan binary
-CMD ["./app"]
+CMD ["./wait-for-db.sh"]
