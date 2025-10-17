@@ -20,6 +20,8 @@ type PostRepository interface {
 	GetDetailPostWithFilter(slug string, filter dto.PostFilterRequest) (*dto.PostResponse, error)
 
 	SaveFilePost(postAssets models.PostAsset) error
+
+	CountPostByUserThisMonth(userId int) (int64, error)
 }
 
 type PostRepositoryImpl struct {
@@ -243,4 +245,20 @@ func (r *PostRepositoryImpl) SaveFilePost(postAssets models.PostAsset) error {
 	}
 
 	return nil
+}
+
+func (r *PostRepositoryImpl) CountPostByUserThisMonth(userId int) (int64, error) {
+
+	var total int64
+
+	if err := r.DB.
+		Where("author_id = ?", userId).
+		Where("MONTH(created_at) = MONTH(NOW())").
+		Where("YEAR(created_at) = YEAR(NOW())").
+		Model(&models.Post{}).
+		Count(&total).Error; err != nil {
+		return total, exception.NewGormDBErr(err)
+	}
+
+	return total, nil
 }

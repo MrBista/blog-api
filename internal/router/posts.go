@@ -18,7 +18,7 @@ func SetupPostRoute(router fiber.Router, db *gorm.DB) {
 
 	postRouter := router.Group("/posts")
 
-	postRouter.Post("/uploads", handlerPost.SaveFileTemp)
+	postRouter.Post("/uploads", middleware.AuthMiddlware(), handlerPost.SaveFileTemp)
 	postRouter.Get("/", handlerPost.GetAllPosts)
 	postRouter.Get("/:slug", middleware.AuthMiddlware(), handlerPost.GetPostBySlug)
 	postRouter.Delete("/:slug", middleware.AuthMiddlware(), handlerPost.DeletePost)

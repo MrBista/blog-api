@@ -41,6 +41,14 @@ const (
 	ERR_COMMON          = "COMMON_ERR"
 )
 
+func NewBusnissLogicErr(message string) *ErrorCustom {
+	return &ErrorCustom{
+		Message: message,
+		Status:  fiber.StatusBadRequest,
+		Code:    ERR_BUSNISS_LOGIC,
+	}
+}
+
 func NewBadRequestErr(message string) *ErrorCustom {
 	return &ErrorCustom{
 		Message: message,

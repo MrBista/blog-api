@@ -7,6 +7,7 @@ import (
 	"github.com/MrBista/blog-api/internal/router"
 	"github.com/MrBista/blog-api/internal/utils"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func main() {
@@ -25,6 +26,14 @@ func main() {
 		ErrorHandler: middleware.HandleError,
 		Prefork:      true,
 	})
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:  "*", // Ganti "*" dengan domain spesifik jika perlu
+		AllowMethods:  "GET,POST,PUT,DELETE,OPTIONS",
+		AllowHeaders:  "Origin, Content-Type, Accept, Authorization",
+		ExposeHeaders: "Content-Length",
+		// AllowCredentials: true,
+	}))
 
 	app.Static("/public", "./public")
 

@@ -99,6 +99,14 @@ func (p *PostServiceImpl) CreatePost(reqBody *dto.CreatePostRequest, user *utils
 		return exception.NewNotFoundErr("category not found")
 	}
 
+	// cek dulu tuk user ini sudah berapa banyak buat post di bulan ini
+	// kalau lebih dari 100 maka harus subscribe dulu
+	// sebulan maksimal buat 100 artikel
+
+	if count, err := p.PostRepository.CountPostByUserThisMonth(user.UserId); count > 100 || err != nil {
+		return exception.NewBusnissLogicErr("You've reached limit for this month")
+	}
+
 	// Ubah title jadi slug-friendly (huruf kecil, spasi jadi '-')
 	slugBase := strings.ToLower(strings.ReplaceAll(reqBody.Title, " ", "_"))
 
