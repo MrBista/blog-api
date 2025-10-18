@@ -17,6 +17,11 @@ type UserService interface {
 	CreateUser(userBody dto.RegisterRequest) (*dto.UserResponse, error)
 	FollowUser(userToFollow int, userDetail *utils.Claims) error
 	UnFollowUser(userToUnFollow int, userDetail *utils.Claims) error
+	GetListFollower(userId int) ([]dto.UserFollowerDTO, error)
+	GetListFollowing(userId int) ([]dto.UserFollowingDTO, error)
+	CountFollower(userId int) (int64, error)
+	CountFollowing(userId int) (int64, error)
+	CheckIsFollowing(targetUserId int, currentUserId int) (bool, error)
 }
 
 type UserServiceImpl struct {

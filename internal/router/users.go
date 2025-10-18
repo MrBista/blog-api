@@ -20,4 +20,23 @@ func SetUserRoute(router fiber.Router, db *gorm.DB) {
 	userRoute.Get("/", middleware.AuthMiddlware(), userHandler.GetAllUser)
 	userRoute.Post("/", middleware.AuthMiddlware(), middleware.RoleMiddleare(enum.RoleAdmin), userHandler.CreateUser)
 	userRoute.Put("/deactive", middleware.AuthMiddlware(), middleware.RoleMiddleare(enum.RoleAdmin), userHandler.DeactiveUser)
+
+	// My followers & following (harus di atas /:id agar tidak bentrok)
+	userRoute.Get("/me/followers", middleware.AuthMiddlware(), userHandler.GetMyFollowers)
+	userRoute.Get("/me/following", middleware.AuthMiddlware(), userHandler.GetMyFollowing)
+
+	// Follow/Unfollow user
+	userRoute.Post("/:id/follow", middleware.AuthMiddlware(), userHandler.FollowUser)
+	userRoute.Delete("/:id/follow", middleware.AuthMiddlware(), userHandler.UnfollowUser)
+
+	// Check follow status
+	userRoute.Get("/:id/follow/status", middleware.AuthMiddlware(), userHandler.CheckFollowStatus)
+
+	// Get followers & following of specific user
+	userRoute.Get("/:id/followers", middleware.AuthMiddlware(), userHandler.GetListFollower)
+	userRoute.Get("/:id/following", middleware.AuthMiddlware(), userHandler.GetListFollowing)
+
+	// Count followers & following
+	userRoute.Get("/:id/followers/count", middleware.AuthMiddlware(), userHandler.GetFollowerCount)
+	userRoute.Get("/:id/following/count", middleware.AuthMiddlware(), userHandler.GetFollowingCount)
 }
