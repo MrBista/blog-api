@@ -15,6 +15,8 @@ type UserService interface {
 	FindAllUserWithPaginatin(filter dto.UserFilterRequest) (*dto.PaginationResult, error)
 	DeactiveUsers(ids []int) error
 	CreateUser(userBody dto.RegisterRequest) (*dto.UserResponse, error)
+	FollowUser(userToFollow int, userDetail *utils.Claims) error
+	UnFollowUser(userToUnFollow int, userDetail *utils.Claims) error
 }
 
 type UserServiceImpl struct {
@@ -108,4 +110,122 @@ func (s *UserServiceImpl) CreateUser(userBody dto.RegisterRequest) (*dto.UserRes
 		mapUserResponse.Bio = *modelUser.Bio
 	}
 	return &mapUserResponse, nil
+}
+
+func (s *UserServiceImpl) FollowUser(userToFollow int, userDetail *utils.Claims) error {
+	if userToFollow == userDetail.UserId {
+		return exception.NewBadRequestErr("Cannot follow yourself")
+	}
+
+	var userExists int64
+	if err := s.DB.Model(&models.User{}).Where("id = ?", userToFollow).Count(&userExists).Error; err != nil {
+		return exception.NewGormDBErr(err)
+	}
+	if userExists == 0 {
+		return exception.NewNotFoundErr("User not found")
+	}
+
+	isFollowing, err := s.UserRepository.CheckIsFollowing(userDetail.UserId, userToFollow)
+	if err != nil {
+		return err
+	}
+	if isFollowing {
+		return exception.NewBadRequestErr("Already following this user")
+	}
+
+	followerCreate := models.Follower{
+		FollowerID:  uint64(userDetail.UserId),
+		FollowingID: uint64(userToFollow),
+	}
+
+	if err := s.UserRepository.CreateFollower(&followerCreate); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *UserServiceImpl) UnFollowUser(userToUnFollow int, userDetail *utils.Claims) error {
+	if userToUnFollow == userDetail.UserId {
+		return exception.NewBadRequestErr("Cannot unfollow yourself")
+	}
+
+	isFollowing, err := s.UserRepository.CheckIsFollowing(userDetail.UserId, userToUnFollow)
+	if err != nil {
+		return err
+	}
+	if !isFollowing {
+		return exception.NewNotFoundErr("Not following this user")
+	}
+
+	if err := s.UserRepository.DeleteFollower(userToUnFollow, userDetail.UserId); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *UserServiceImpl) GetListFollower(userId int) ([]dto.UserFollowerDTO, error) {
+	var userExists int64
+	if err := s.DB.Model(&models.User{}).Where("id = ?", userId).Count(&userExists).Error; err != nil {
+		return nil, exception.NewGormDBErr(err)
+	}
+	if userExists == 0 {
+		return nil, exception.NewNotFoundErr("User not found")
+	}
+
+	followers, err := s.UserRepository.GetListFollower(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return followers, nil
+}
+
+func (s *UserServiceImpl) GetListFollowing(userId int) ([]dto.UserFollowingDTO, error) {
+	var userExists int64
+	if err := s.DB.Model(&models.User{}).Where("id = ?", userId).Count(&userExists).Error; err != nil {
+		return nil, exception.NewGormDBErr(err)
+	}
+	if userExists == 0 {
+		return nil, exception.NewNotFoundErr("User not found")
+	}
+
+	following, err := s.UserRepository.GetListFollowing(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return following, nil
+}
+
+func (s *UserServiceImpl) CountFollower(userId int) (int64, error) {
+	count, err := s.UserRepository.CountFollower(userId)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (s *UserServiceImpl) CountFollowing(userId int) (int64, error) {
+	count, err := s.UserRepository.CountFollowing(userId)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (s *UserServiceImpl) CheckIsFollowing(targetUserId int, currentUserId int) (bool, error) {
+	if targetUserId == currentUserId {
+		return false, nil
+	}
+
+	isFollowing, err := s.UserRepository.CheckIsFollowing(currentUserId, targetUserId)
+	if err != nil {
+		return false, err
+	}
+
+	return isFollowing, nil
 }

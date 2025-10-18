@@ -17,6 +17,13 @@ type UserRepository interface {
 	FindAllUser() ([]models.User, error)
 	FindAllUserWithPagination(filter dto.UserFilterRequest) (*dto.PaginationResult, error)
 	DeactiveUsers(ids []int) error
+	CreateFollower(follower *models.Follower) error
+	DeleteFollower(followingId int, userId int) error
+	GetListFollowing(userId int) ([]dto.UserFollowingDTO, error)
+	GetListFollower(userId int) ([]dto.UserFollowerDTO, error)
+	CountFollowing(userId int) (int64, error)
+	CheckIsFollowing(followerId int, followingId int) (bool, error)
+	CountFollower(userId int) (int64, error)
 }
 
 type UserRepositoryImpl struct {
@@ -129,4 +136,101 @@ func (r *UserRepositoryImpl) DeactiveUsers(ids []int) error {
 	}
 
 	return nil
+}
+
+func (r *UserRepositoryImpl) CreateFollower(follower *models.Follower) error {
+	if err := r.DB.Create(&follower).Error; err != nil {
+		return exception.NewGormDBErr(err)
+	}
+	return nil
+}
+
+func (r *UserRepositoryImpl) DeleteFollower(followingId int, userId int) error {
+	if err := r.
+		DB.
+		Where("following_id = ?", followingId).
+		Where("follower_id = ?", userId).
+		Delete(&models.Follower{}).Error; err != nil {
+		return exception.NewGormDBErr(err)
+	}
+	return nil
+}
+
+func (r *UserRepositoryImpl) GetListFollower(userId int) ([]dto.UserFollowerDTO, error) {
+	var followers []dto.UserFollowerDTO
+
+	err := r.DB.
+		Table("followers").
+		Select("users.id, users.name, users.username, users.email, users.profile_image_uri, users.bio, followers.created_at as followed_at").
+		Joins("JOIN users ON users.id = followers.follower_id").
+		Where("followers.following_id = ?", userId).
+		Scan(&followers).Error
+
+	if err != nil {
+		return nil, exception.NewGormDBErr(err)
+	}
+
+	return followers, nil
+}
+
+func (r *UserRepositoryImpl) GetListFollowing(userId int) ([]dto.UserFollowingDTO, error) {
+	var following []dto.UserFollowingDTO
+
+	err := r.DB.
+		Table("followers").
+		Select("users.id, users.name, users.username, users.email, users.profile_image_uri, users.bio, followers.created_at as followed_at").
+		Joins("JOIN users ON users.id = followers.following_id").
+		Where("followers.follower_id = ?", userId).
+		Scan(&following).Error
+
+	if err != nil {
+		return nil, exception.NewGormDBErr(err)
+	}
+
+	return following, nil
+}
+
+func (r *UserRepositoryImpl) CountFollower(userId int) (int64, error) {
+	var count int64
+
+	err := r.DB.
+		Model(&models.Follower{}).
+		Where("following_id = ?", userId).
+		Count(&count).Error
+
+	if err != nil {
+		return 0, exception.NewGormDBErr(err)
+	}
+
+	return count, nil
+}
+
+func (r *UserRepositoryImpl) CountFollowing(userId int) (int64, error) {
+	var count int64
+
+	err := r.DB.
+		Model(&models.Follower{}).
+		Where("follower_id = ?", userId).
+		Count(&count).Error
+
+	if err != nil {
+		return 0, exception.NewGormDBErr(err)
+	}
+
+	return count, nil
+}
+
+func (r *UserRepositoryImpl) CheckIsFollowing(followerId int, followingId int) (bool, error) {
+	var count int64
+
+	err := r.DB.
+		Model(&models.Follower{}).
+		Where("follower_id = ? AND following_id = ?", followerId, followingId).
+		Count(&count).Error
+
+	if err != nil {
+		return false, exception.NewGormDBErr(err)
+	}
+
+	return count > 0, nil
 }
