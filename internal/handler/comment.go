@@ -31,9 +31,11 @@ func (h *CommentHandlerImpl) FindAllComment(c *fiber.Ctx) error {
 	pageSize, _ := strconv.Atoi(c.Query("page_size", "10"))
 	sort := c.Query("sort", "created_at desc")
 	postId, _ := strconv.Atoi(c.Params("postId"))
+	parentId, _ := strconv.Atoi(c.Query("parentId"))
 
 	filter := dto.CommentFilterRequest{
-		PostId: postId,
+		PostId:   postId,
+		ParentId: parentId,
 		PaginationParams: dto.PaginationParams{
 			Page:     page,
 			PageSize: pageSize,

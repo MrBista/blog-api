@@ -25,6 +25,7 @@ type CategoryFilterRequest struct {
 }
 
 type CommentFilterRequest struct {
-	PostId int `json:"postId"`
+	PostId   int `json:"postId"`
+	ParentId int `json:"parentId"`
 	PaginationParams
 }
