@@ -19,7 +19,7 @@ func SetAuthRoute(router fiber.Router, db *gorm.DB) {
 	authRoute.Post("/login", authHandler.LoginUser)
 	authRoute.Post("/register", authHandler.RegisterUser)
 
-	authRoute.Post("/google/url", authHandler.GetGoogleAuthURL)
+	authRoute.Get("/google/url", authHandler.GetGoogleAuthURL)
 	authRoute.Post("/google/callback", authHandler.GoogleCallback)
 
 }

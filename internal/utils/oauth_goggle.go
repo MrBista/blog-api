@@ -1,8 +1,7 @@
 package utils
 
 import (
-	"os"
-
+	"github.com/MrBista/blog-api/internal/config"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
@@ -11,9 +10,9 @@ var GoogleOAuthConfig *oauth2.Config
 
 func InitGoogleOAuth() {
 	GoogleOAuthConfig = &oauth2.Config{
-		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
-		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
-		RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URL"), // http://localhost:3000/auth/callback
+		ClientID:     config.AppConfig.AppMain.GetGoogleClientId(),
+		ClientSecret: config.AppConfig.AppMain.GetGoogleClientSecret(),
+		RedirectURL:  config.AppConfig.AppMain.GetGoogleRedirctUrl(), // http://localhost:3000/auth/callback
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email",
 			"https://www.googleapis.com/auth/userinfo.profile",

@@ -175,6 +175,7 @@ func (s *AuthServiceImpl) findOrCreateGoogleUser(googleUser *dto.GoogleUserInfo)
 		userByUsername.Name = googleUser.Name
 		userByUsername.ProfileImageURI = &googleUser.Picture
 		userByUsername.Email = googleUser.Email // update email juga kalau berubah
+		userByUsername.Status = 1
 
 		if updateErr := s.UserRepo.Update(userByUsername); updateErr != nil {
 			return nil, errors.New("failed to update user")
@@ -197,6 +198,7 @@ func (s *AuthServiceImpl) findOrCreateGoogleUser(googleUser *dto.GoogleUserInfo)
 		userByEmail.AuthProvider = "google"
 		userByEmail.Name = googleUser.Name
 		userByEmail.ProfileImageURI = &googleUser.Picture
+		userByUsername.Status = 1
 
 		if updateErr := s.UserRepo.Update(userByEmail); updateErr != nil {
 			return nil, exception.NewBadRequestErr("failed to link google account")
@@ -216,6 +218,7 @@ func (s *AuthServiceImpl) findOrCreateGoogleUser(googleUser *dto.GoogleUserInfo)
 		ProfileImageURI: &googleUser.Picture,
 		AuthProvider:    "google",
 		Role:            int(enum.RoleReader),
+		Status:          1,
 		Password:        "", // no password untuk Google OAuth
 	}
 

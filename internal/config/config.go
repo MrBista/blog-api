@@ -143,3 +143,14 @@ func (c *AppMain) GetPort() string {
 func (c *AppMain) GetBaseUrl() string {
 	return c.BaseUrl
 }
+func (c *AppMain) GetGoogleClientId() string {
+	return c.GoggleClientId
+}
+
+func (c *AppMain) GetGoogleClientSecret() string {
+	return c.GoggleClientSecret
+}
+
+func (c *AppMain) GetGoogleRedirctUrl() string {
+	return c.GoggleRedirectUrl
+}
