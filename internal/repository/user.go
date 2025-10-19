@@ -24,6 +24,7 @@ type UserRepository interface {
 	CountFollowing(userId int) (int64, error)
 	CheckIsFollowing(followerId int, followingId int) (bool, error)
 	CountFollower(userId int) (int64, error)
+	GetDetailUser(userId int) (*dto.UserResponse, error)
 }
 
 type UserRepositoryImpl struct {
@@ -154,6 +155,21 @@ func (r *UserRepositoryImpl) DeleteFollower(followingId int, userId int) error {
 		return exception.NewGormDBErr(err)
 	}
 	return nil
+}
+
+func (r *UserRepositoryImpl) GetDetailUser(userId int) (*dto.UserResponse, error) {
+	var userDetail dto.UserResponse
+
+	if err := r.
+		DB.
+		Table("users").
+		Select("name", "username", "email", "bio", "role").
+		Where("id = ?", userId).
+		Scan(&userDetail).Error; err != nil {
+		return nil, exception.NewGormDBErr(err)
+	}
+
+	return &userDetail, nil
 }
 
 func (r *UserRepositoryImpl) GetListFollower(userId int) ([]dto.UserFollowerDTO, error) {

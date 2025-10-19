@@ -22,6 +22,7 @@ type UserService interface {
 	CountFollower(userId int) (int64, error)
 	CountFollowing(userId int) (int64, error)
 	CheckIsFollowing(targetUserId int, currentUserId int) (bool, error)
+	DetailUser(userId int) (*dto.UserResponse, error)
 }
 
 type UserServiceImpl struct {
@@ -54,6 +55,15 @@ func (s *UserServiceImpl) FindAllUserWithPaginatin(filter dto.UserFilterRequest)
 	}
 
 	return datas, err
+}
+
+func (s *UserServiceImpl) DetailUser(userId int) (*dto.UserResponse, error) {
+	userResponse, err := s.UserRepository.GetDetailUser(userId)
+
+	if err != nil {
+		return nil, err
+	}
+	return userResponse, nil
 }
 
 func (s *UserServiceImpl) DeactiveUsers(ids []int) error {

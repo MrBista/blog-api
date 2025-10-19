@@ -25,6 +25,8 @@ func SetUserRoute(router fiber.Router, db *gorm.DB) {
 	userRoute.Get("/me/followers", middleware.AuthMiddlware(), userHandler.GetMyFollowers)
 	userRoute.Get("/me/following", middleware.AuthMiddlware(), userHandler.GetMyFollowing)
 
+	userRoute.Get("/:id", middleware.AuthMiddlware(), userHandler.GetDetailUser)
+
 	// Follow/Unfollow user
 	userRoute.Post("/:id/follow", middleware.AuthMiddlware(), userHandler.FollowUser)
 	userRoute.Delete("/:id/follow", middleware.AuthMiddlware(), userHandler.UnfollowUser)

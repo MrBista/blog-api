@@ -77,7 +77,24 @@ func (h *UserHandlerImpl) DeactiveUser(c *fiber.Ctx) error {
 }
 
 func (h *UserHandlerImpl) GetDetailUser(c *fiber.Ctx) error {
-	panic("not implemented") // TODO: Implement
+	userToFollowParam := c.Params("id")
+
+	userId, err := strconv.Atoi(userToFollowParam)
+	if err != nil {
+		return exception.NewBadRequestErr("Invalid user ID")
+	}
+
+	userResponseDetail, err := h.UserService.DetailUser(userId)
+
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(dto.CommonResponseSuccess{
+		Data:    userResponseDetail,
+		Status:  fiber.StatusOK,
+		Message: "Successfully get detail users",
+	})
 }
 
 func (h *UserHandlerImpl) CreateUser(c *fiber.Ctx) error {

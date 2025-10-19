@@ -27,4 +27,6 @@ func SetupPostRoute(router fiber.Router, db *gorm.DB) {
 
 	SetCommentRoute(postRouter, db)
 
+	SetupReadingListRoutes(router, postService)
+
 }
