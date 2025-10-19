@@ -16,9 +16,12 @@ type Config struct {
 }
 
 type AppMain struct {
-	PORT    string
-	BaseUrl string
-	Domain  string
+	PORT               string
+	BaseUrl            string
+	Domain             string
+	GoggleClientId     string
+	GoggleClientSecret string
+	GoggleRedirectUrl  string
 }
 
 type DBConfig struct {
@@ -56,9 +59,12 @@ func LoadConfig() *Config {
 
 	conf := &Config{
 		AppMain: AppMain{
-			PORT:    viper.GetString("app.port"),
-			BaseUrl: viper.GetString("app.base_url"),
-			Domain:  viper.GetString("app.domain"),
+			PORT:               viper.GetString("app.port"),
+			BaseUrl:            viper.GetString("app.base_url"),
+			Domain:             viper.GetString("app.domain"),
+			GoggleClientId:     viper.GetString("app.google_client_id"),
+			GoggleClientSecret: viper.GetString("app.google_client_secret"),
+			GoggleRedirectUrl:  viper.GetString("app.google_redirect_url"),
 		},
 		DB: DBConfig{
 			Host:     viper.GetString("database.host"),

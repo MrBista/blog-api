@@ -20,3 +20,21 @@ type RegisterRequest struct {
 	Bio      string `json:"bio"`
 	Role     int    `json:"role"`
 }
+
+type GoogleCallbackRequest struct {
+	Code string `json:"code" validate:"required"`
+}
+
+type GoogleAuthURLResponse struct {
+	URL string `json:"url"`
+}
+
+type GoogleUserInfo struct {
+	ID            string `json:"id"`
+	Email         string `json:"email"`
+	VerifiedEmail bool   `json:"verifiedEmail"`
+	Name          string `json:"name"`
+	GivenName     string `json:"givenName"`
+	FamilyName    string `json:"familyName"`
+	Picture       string `json:"picture"`
+}

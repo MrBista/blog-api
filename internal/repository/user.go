@@ -12,11 +12,16 @@ import (
 type UserRepository interface {
 	CreateUser(user *models.User) error
 	FindByIdentifier(identifier string) (*models.User, error)
+	FindByEmail(email string) (*models.User, error)
+	FindByUsername(username string) (*models.User, error)
 	FindById(id int) (*models.User, error)
 	FindByEmailOrUsername(email string, username string) (*models.User, error)
 	FindAllUser() ([]models.User, error)
 	FindAllUserWithPagination(filter dto.UserFilterRequest) (*dto.PaginationResult, error)
 	DeactiveUsers(ids []int) error
+	Create(user *models.User) error
+	Update(user *models.User) error
+
 	CreateFollower(follower *models.Follower) error
 	DeleteFollower(followingId int, userId int) error
 	GetListFollowing(userId int) ([]dto.UserFollowingDTO, error)
@@ -56,6 +61,31 @@ func (r *UserRepositoryImpl) FindByIdentifier(identifier string) (*models.User, 
 	}
 
 	return &user, nil
+}
+func (r *UserRepositoryImpl) FindByEmail(email string) (*models.User, error) {
+	var user models.User
+	err := r.DB.Where("email = ?", email).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *UserRepositoryImpl) FindByUsername(username string) (*models.User, error) {
+	var user models.User
+	err := r.DB.Where("username = ?", username).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *UserRepositoryImpl) Create(user *models.User) error {
+	return r.DB.Create(user).Error
+}
+
+func (r *UserRepositoryImpl) Update(user *models.User) error {
+	return r.DB.Save(user).Error
 }
 
 func (r *UserRepositoryImpl) FindById(id int) (*models.User, error) {

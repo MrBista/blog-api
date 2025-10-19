@@ -14,6 +14,8 @@ type AuthHandler interface {
 	LoginUser(c *fiber.Ctx) error
 	RegisterUser(c *fiber.Ctx) error
 	ConfirmOtp(c *fiber.Ctx) error
+	GetGoogleAuthURL(c *fiber.Ctx) error
+	GoogleCallback(c *fiber.Ctx) error
 }
 
 type AuthHandlerImpl struct {
@@ -51,6 +53,42 @@ func (h *AuthHandlerImpl) LoginUser(c *fiber.Ctx) error {
 		Data:    responseLogin,
 		Status:  fiber.StatusOK,
 		Message: "Successfully login user",
+	})
+}
+
+func (h *AuthHandlerImpl) GetGoogleAuthURL(c *fiber.Ctx) error {
+	state := utils.GenerateRandomString(32)
+	url := h.AuthService.GetGoogleAuthURL(state)
+
+	return c.JSON(dto.GoogleAuthURLResponse{
+		URL: url,
+	})
+}
+
+func (h *AuthHandlerImpl) GoogleCallback(c *fiber.Ctx) error {
+	var req dto.GoogleCallbackRequest
+
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	validator := utils.GetValidator()
+
+	if err := validator.Struct(&req); err != nil {
+		return exception.NewValidationErr(err)
+	}
+
+	response, err := h.AuthService.HandleGoogleCallback(req.Code)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(dto.CommonResponseSuccess{
+		Data:    response,
+		Status:  fiber.StatusOK,
+		Message: "Successfully login",
 	})
 }
 

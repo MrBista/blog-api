@@ -22,6 +22,8 @@ func main() {
 
 	utils.InitLogger()
 
+	utils.InitGoogleOAuth()
+
 	app := fiber.New(fiber.Config{
 		ErrorHandler: middleware.HandleError,
 		Prefork:      true,
