@@ -84,6 +84,17 @@ func (h *UserHandlerImpl) GetDetailUser(c *fiber.Ctx) error {
 		return exception.NewBadRequestErr("Invalid user ID")
 	}
 
+	if userId == 0 {
+		// kalau userIdnya == 0, maka dia maka userid dari token/user yg login
+		detailUser, err := utils.GetUserClaims(c)
+
+		if err != nil {
+			return err
+		}
+		userId = detailUser.UserId
+
+	}
+
 	userResponseDetail, err := h.UserService.DetailUser(userId)
 
 	if err != nil {

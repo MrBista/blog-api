@@ -193,7 +193,7 @@ func (r *UserRepositoryImpl) GetDetailUser(userId int) (*dto.UserResponse, error
 	if err := r.
 		DB.
 		Table("users").
-		Select("name", "username", "email", "bio", "role").
+		Select("id", "name", "username", "email", "bio", "role").
 		Where("id = ?", userId).
 		Scan(&userDetail).Error; err != nil {
 		return nil, exception.NewGormDBErr(err)
