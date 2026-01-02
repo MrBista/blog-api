@@ -13,7 +13,7 @@ services:
 
   blog-api-db:
     container_name: "blog_api_db"
-    image: mysql:latest # dalam practice nyata ga baik pakai latest, seharusnya ke spesifik verisi dari mysql
+    image: mysql:8.0 # dalam practice nyata ga baik pakai latest, seharusnya ke spesifik verisi dari mysql
     restart: always
     environment:
         MYSQL_USER : blog_api_user
