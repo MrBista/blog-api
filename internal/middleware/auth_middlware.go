@@ -40,6 +40,23 @@ func AuthMiddlware() fiber.Handler {
 	}
 }
 
+func AuthMiddlewareWS() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+
+		token := c.Query("token")
+		jwtService := utils.GetJwtService()
+		claim, err := jwtService.VerifyToken(token)
+		if err != nil {
+			return exception.NewUnAuthorizationErr("invalid or expired token")
+		}
+		c.Locals("user", claim)
+		c.Locals("userId", claim.UserId)
+		c.Locals("role", claim.Role)
+
+		return c.Next()
+	}
+}
+
 func RoleMiddleare(allowedRoles ...enum.UserRole) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 

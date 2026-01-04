@@ -32,7 +32,7 @@ func SetMessageRouter(router fiber.Router, db *gorm.DB) {
 	})
 
 	router.Group("/api/v1/ws/chat/:roomId",
-		middleware.AuthMiddlware(),
+		middleware.AuthMiddlewareWS(),
 		middleware.ChatMessageMiddleware(),
 		websocket.New(func(c *websocket.Conn) {
 			chatWsHandler.Handle(c)
