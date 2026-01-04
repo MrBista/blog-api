@@ -48,5 +48,14 @@ func (s *MessageServiceImpl) FindOrCreateRoom(blogId, senderId, writerId int) (*
 
 func (s *MessageServiceImpl) SaveMessage(message string, roomId, senderId int) (*models.ChatMessage, error) {
 
-	return nil, nil
+	var messageDTO models.ChatMessage
+	messageDTO.Message = message
+	messageDTO.RoomId = int64(roomId)
+	messageDTO.SenderId = int64(senderId)
+
+	if err := s.ChatMessageRepo.SaveMessage(&messageDTO); err != nil {
+		return nil, err
+	}
+
+	return &messageDTO, nil
 }
