@@ -4,20 +4,20 @@ import (
 	"sync"
 
 	"github.com/MrBista/blog-api/internal/services"
-	"golang.org/x/net/websocket"
+	"github.com/gofiber/websocket/v2"
 )
 
 type WSClient struct {
 	Conn   *websocket.Conn
-	RoomID int
-	UserID int
+	RoomID uint
+	UserID uint
 }
 
 type ChatWSHandler struct {
 	MessageService services.MessageService
 }
 
-func NewChatWsHandler(messageService services.MessageService) *ChatWSHandler {
+func NewChatWSHandler(messageService services.MessageService) *ChatWSHandler {
 	return &ChatWSHandler{
 		MessageService: messageService,
 	}
@@ -25,13 +25,12 @@ func NewChatWsHandler(messageService services.MessageService) *ChatWSHandler {
 
 var (
 	rooms = make(map[uint]map[*WSClient]bool)
-	mu    sync.Mutex
+	mu    sync.RWMutex
 )
 
 func (h *ChatWSHandler) Handle(c *websocket.Conn) {
-
-	roomID := c.Locals("room_id").(int)
-	userID := c.Locals("user_id").(int)
+	roomID := c.Locals("room_id").(uint)
+	userID := c.Locals("user_id").(uint)
 
 	client := &WSClient{
 		Conn:   c,
@@ -49,6 +48,9 @@ func (h *ChatWSHandler) Handle(c *websocket.Conn) {
 	defer func() {
 		mu.Lock()
 		delete(rooms[roomID], client)
+		if len(rooms[roomID]) == 0 {
+			delete(rooms, roomID)
+		}
 		mu.Unlock()
 		c.Close()
 	}()
@@ -62,15 +64,29 @@ func (h *ChatWSHandler) Handle(c *websocket.Conn) {
 			break
 		}
 
-		msg, err := h.MessageService.SaveMessage(payload.Message, roomID, userID)
+		if payload.Message == "" {
+			continue
+		}
+
+		msg, err := h.MessageService.SaveMessage(payload.Message, int(roomID), int(userID))
 		if err != nil {
 			continue
 		}
 
-		mu.Lock()
+		mu.RLock()
+		clients := make([]*WSClient, 0, len(rooms[roomID]))
 		for cl := range rooms[roomID] {
-			cl.Conn.WriteJSON(msg)
+			clients = append(clients, cl)
 		}
-		mu.Unlock()
+		mu.RUnlock()
+
+		for _, cl := range clients {
+			if err := cl.Conn.WriteJSON(msg); err != nil {
+				mu.Lock()
+				delete(rooms[roomID], cl)
+				mu.Unlock()
+				cl.Conn.Close()
+			}
+		}
 	}
 }
